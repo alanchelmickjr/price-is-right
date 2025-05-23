@@ -286,6 +286,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - The open-source computer vision community
 - Our amazing beta testers and early adopters
 
-# /Users/alanhelmick/Documents/GitHub/ebay-helper/README.md
-
 
