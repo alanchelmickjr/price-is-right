@@ -7,6 +7,7 @@
 
 > 🏆 **Built for Google Apartiv & Neo4j Hackathon** - Revolutionizing online marketplace experiences with intelligent graph databases and local AI detection.
 
+## HACKATHON SLIDES -> https://ipxddzdl.gensparkspace.com
 ## 🌟 Overview
 
 eBay Helper leverages cutting-edge graph database technology and local AI models to provide intelligent insights, fraud detection, and enhanced user experiences for online marketplace interactions. Our solution combines the power of Neo4j's graph capabilities with Firebase's real-time features and on-device AI processing.
