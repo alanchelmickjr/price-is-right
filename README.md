@@ -7,7 +7,12 @@
 
 > 🏆 **Built for Google Apartiv & Neo4j Hackathon** - Revolutionizing online marketplace experiences with intelligent graph databases and local AI detection.
 
-## HACKATHON SLIDES -> https://ipxddzdl.gensparkspace.com
+![eBay Garage](ebaygarage.png)
+
+## HACKATHON SLIDES
+
+[https://ipxddzdl.gensparkspace.com](https://ipxddzdl.gensparkspace.com)
+
 ## 🌟 Overview
 
 eBay Helper leverages cutting-edge graph database technology and local AI models to provide intelligent insights, fraud detection, and enhanced user experiences for online marketplace interactions. Our solution combines the power of Neo4j's graph capabilities with Firebase's real-time features and on-device AI processing.
@@ -86,7 +91,7 @@ npm run firebase:deploy
 Our privacy-first approach uses TensorFlow Lite models for:
 
 - **Fraud Detection**: Identifies suspicious listing patterns
-- **Price Anomaly Detection**: Flags unusual pricing behaviors  
+- **Price Anomaly Detection**: Flags unusual pricing behaviors
 - **Image Recognition**: Validates product authenticity
 - **Sentiment Analysis**: Analyzes review and feedback sentiment
 
@@ -153,7 +158,8 @@ Built with ❤️ for the Google Apartiv & Neo4j Hackathon by Team eBay Helper.
 
 **Ready to revolutionize online marketplaces?** 🚀 Let's build the future of intelligent e-commerce together!
 
-#After Hackathon README.md
+# After Hackathon README.md
+
 ## ValueFinder: Instantly Identify, Value, and Sell Items with AI 📱💰
 
 **Built for Speed. Powered by AI. No Cloud.**
@@ -164,32 +170,34 @@ Built with ❤️ for the Google Apartiv & Neo4j Hackathon by Team eBay Helper.
 
 **Deployment:** Vercel
 
-**🔍 Overview**
+### 🔍 Overview
 
 ValueFinder is a game-changing application that lets you discover the value of items around you and sell them online with ease. Using your device's camera, ValueFinder identifies objects in real-time with **on-device AI**, estimates their market value on eBay, and allows you to list them for sale with a single tap. **All processing happens locally – your data stays private.**
 
 <!-- Add a link to a demo video or GIF here -->
 <!-- [ValueFinder Demo](link-to-demo) -->
 
-**✨ Key Features**
+### ✨ Key Features
 
-Real-time Object Detection: Point your camera at any item to instantly identify it
-On-device AI Processing: Uses local attentive transformer models for privacy and efficiency
-Market Value Estimation: Automatically looks up comparable items on eBay to estimate value
-One-tap Listing: List items for sale on eBay with a single tap
-Privacy-first Design: All object recognition happens locally on your device
-Offline Capability: Core features work without an internet connection
-Universal Application: Works on everyday items, collectibles, electronics, vehicles, and more
-🛠️ Technology Stack
+- Real-time Object Detection: Point your camera at any item to instantly identify it
+- On-device AI Processing: Uses local attentive transformer models for privacy and efficiency
+- Market Value Estimation: Automatically looks up comparable items on eBay to estimate value
+- One-tap Listing: List items for sale on eBay with a single tap
+- Privacy-first Design: All object recognition happens locally on your device
+- Offline Capability: Core features work without an internet connection
+- Universal Application: Works on everyday items, collectibles, electronics, vehicles, and more
 
-* **Frontend:** React Native, JavaScript
-* **AI/ML:** Local Attentive Transformer Models for object detection and classification (100% on-device)
-* **APIs:** eBay Trading API for pricing data and listing creation
-* **Deployment:** Vercel
-* **Authentication:** Secure OAuth integration with eBay
+### 🛠️ Technology Stack
+
+- **Frontend:** React Native, JavaScript
+- **AI/ML:** Local Attentive Transformer Models for object detection and classification (100% on-device)
+- **APIs:** eBay Trading API for pricing data and listing creation
+- **Deployment:** Vercel
+- **Authentication:** Secure OAuth integration with eBay
 
 *(Note: This project does not utilize Google, Aparavi, or Neo4j. It is built with the technologies listed above.)*
-📋 Requirements
+
+### 📋 Requirements
 
 Node.js 18.x or higher
 React Native environment setup
