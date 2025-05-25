@@ -186,8 +186,9 @@ export default function Onboarding() {
                    style={{background: "linear-gradient(135deg, var(--primary-light), var(--primary))"}}>
                 <div className="text-4xl">📱</div>
               </div>
-              <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full shadow-md flex items-center justify-center bg-gradient-to-br from-secondary-light to-secondary">
-                <div className="text-lg">🤖</div>
+              {/* Modern design accent - replaced robot icon */}
+              <div className="absolute -top-1 -right-1 w-10 h-10 rounded-full shadow-lg flex items-center justify-center bg-gradient-to-br from-secondary-light to-secondary">
+                <div className="text-lg">✨</div>
               </div>
             </div>
             
@@ -288,10 +289,12 @@ export default function Onboarding() {
 
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t" style={{borderColor: 'var(--neutral-200)'}}></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-gray-50 text-gray-500">Or continue with email</span>
+                <span className="px-4 rounded-lg" style={{backgroundColor: 'var(--neu-bg-secondary)', color: 'var(--neutral-500)', backdropFilter: 'blur(5px)'}}>
+                  Or continue with email
+                </span>
               </div>
             </div>
 

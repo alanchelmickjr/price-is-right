@@ -4,18 +4,18 @@
 
 /* Modern Design System for Simply eBay */
 :root {
-  /* Core Brand Colors */
-  --primary: #3b82f6;           /* Blue 500 */
-  --primary-dark: #1d4ed8;      /* Blue 700 */
-  --primary-light: #93c5fd;     /* Blue 300 */
+  /* Core Brand Colors - Updated to a more modern palette */
+  --primary: #8b5cf6;           /* Violet 500 */
+  --primary-dark: #6d28d9;      /* Violet 700 */
+  --primary-light: #c4b5fd;     /* Violet 300 */
   
   --secondary: #10b981;         /* Emerald 500 */
   --secondary-dark: #047857;    /* Emerald 700 */
   --secondary-light: #6ee7b7;   /* Emerald 300 */
   
-  --accent: #0ea5e9;            /* Sky 500 */
-  --accent-dark: #0369a1;       /* Sky 700 */
-  --accent-light: #7dd3fc;      /* Sky 300 */
+  --accent: #ec4899;            /* Pink 500 */
+  --accent-dark: #be185d;       /* Pink 700 */
+  --accent-light: #f9a8d4;      /* Pink 300 */
   
   /* Neutrals */
   --neutral-50: #f9fafb;
@@ -76,17 +76,18 @@ body {
 
 /* Card System */
 .neumorphic-card {
-  background: var(--neu-bg-secondary);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: var(--neu-border-radius);
-  box-shadow: 
-    8px 8px 16px var(--neu-shadow-dark),
-    -8px -8px 16px var(--neu-shadow-light);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  transition: all var(--transition-normal);
+  box-shadow:
+    8px 8px 20px var(--neu-shadow-dark),
+    -8px -8px 20px var(--neu-shadow-light),
+    0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
 .neumorphic-card::before {
@@ -95,26 +96,44 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 3px;
   background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+  opacity: 0.8;
 }
 
 .neumorphic-card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    10px 10px 20px var(--neu-shadow-dark),
-    -10px -10px 20px var(--neu-shadow-light),
-    0 5px 15px rgba(59, 130, 246, 0.1);
+  transform: translateY(-6px) scale(1.03);
+  box-shadow:
+    12px 12px 24px var(--neu-shadow-dark),
+    -12px -12px 24px var(--neu-shadow-light),
+    0 12px 28px rgba(139, 92, 246, 0.2);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.95);
 }
 
 /* Modern Card Components */
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: var(--neu-border-radius);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08),
+    0 6px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 /* Form Controls */
@@ -163,16 +182,16 @@ body {
 
 /* Modern Button System */
 .neumorphic-button {
-  background: var(--neu-bg-secondary);
+  background: rgba(255, 255, 255, 0.8);
   border: none;
   border-radius: var(--neu-border-radius-sm);
-  box-shadow: 
+  box-shadow:
     4px 4px 10px var(--neu-shadow-dark),
     -4px -4px 10px var(--neu-shadow-light);
   color: var(--neutral-700);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
   min-width: 120px;
@@ -184,6 +203,8 @@ body {
   padding: 12px 20px;
   font-size: 1rem;
   letter-spacing: 0.015em;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .neumorphic-button::before {
@@ -198,48 +219,68 @@ body {
 }
 
 .neumorphic-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    5px 5px 12px var(--neu-shadow-dark),
-    -5px -5px 12px var(--neu-shadow-light);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    6px 6px 15px var(--neu-shadow-dark),
+    -6px -6px 15px var(--neu-shadow-light);
+  border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
 .neumorphic-button:active {
   transform: translateY(1px);
-  box-shadow: 
-    inset 3px 3px 6px var(--neu-shadow-inset-dark),
-    inset -3px -3px 6px var(--neu-shadow-inset-light);
+  box-shadow:
+    inset 4px 4px 8px var(--neu-shadow-inset-dark),
+    inset -4px -4px 8px var(--neu-shadow-inset-light);
+  transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .neumorphic-button-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
-  box-shadow: 
-    4px 4px 10px rgba(37, 99, 235, 0.3),
-    -4px -4px 10px rgba(255, 255, 255, 0.1);
+  box-shadow:
+    4px 4px 12px rgba(109, 40, 217, 0.4),
+    -4px -4px 12px rgba(255, 255, 255, 0.2),
+    0 8px 16px rgba(139, 92, 246, 0.2);
   min-width: 140px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .neumorphic-button-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    6px 6px 12px rgba(37, 99, 235, 0.4),
-    -6px -6px 12px rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    6px 6px 15px rgba(109, 40, 217, 0.5),
+    -6px -6px 15px rgba(255, 255, 255, 0.3),
+    0 10px 20px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #9366f8, var(--primary));
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .neumorphic-button-secondary {
   background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
   color: white;
-  box-shadow: 
-    4px 4px 10px rgba(16, 185, 129, 0.3),
-    -4px -4px 10px rgba(255, 255, 255, 0.1);
+  box-shadow:
+    4px 4px 12px rgba(16, 185, 129, 0.3),
+    -4px -4px 12px rgba(255, 255, 255, 0.1),
+    0 6px 14px rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .neumorphic-button-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    6px 6px 12px rgba(16, 185, 129, 0.4),
-    -6px -6px 12px rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    6px 6px 15px rgba(16, 185, 129, 0.4),
+    -6px -6px 15px rgba(255, 255, 255, 0.2),
+    0 8px 16px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #20d997, var(--secondary));
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .neumorphic-button-oauth {
@@ -255,20 +296,24 @@ body {
   max-width: 100%;
   width: 100%;
   padding: 14px 20px;
-  box-shadow: 
-    4px 4px 8px rgba(209, 217, 230, 0.6),
-    -4px -4px 8px rgba(255, 255, 255, 0.9);
+  box-shadow:
+    4px 4px 12px rgba(209, 217, 230, 0.5),
+    -4px -4px 12px rgba(255, 255, 255, 0.9),
+    0 6px 10px rgba(0, 0, 0, 0.03);
   border-radius: var(--neu-border-radius-sm);
-  transition: all var(--transition-fast);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .neumorphic-button-oauth:hover {
   background: var(--neutral-50);
   border-color: var(--neutral-300);
-  transform: translateY(-2px);
-  box-shadow: 
-    6px 6px 12px rgba(209, 217, 230, 0.5),
-    -6px -6px 12px rgba(255, 255, 255, 1);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    6px 6px 15px rgba(209, 217, 230, 0.6),
+    -6px -6px 15px rgba(255, 255, 255, 1),
+    0 8px 15px rgba(0, 0, 0, 0.05);
 }
 
 .neumorphic-button-oauth svg,
@@ -792,4 +837,94 @@ input, textarea, select {
 @keyframes loading {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  margin-bottom: 1.25rem;
+  font-size: var(--font-size-base, 1rem);
+  background-color: var(--neu-bg-secondary);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--neu-border-radius-sm);
+  box-shadow: 
+    inset 2px 2px 5px var(--neu-shadow-inset-dark),
+    inset -2px -2px 5px var(--neu-shadow-inset-light),
+    0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  outline: none;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: var(--neutral-800);
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 
+    inset 1px 1px 3px var(--neu-shadow-inset-dark),
+    inset -1px -1px 3px var(--neu-shadow-inset-light),
+    0 0 0 3px rgba(139, 92, 246, 0.25);
+  transform: translateY(-1px);
+}
+
+.form-control:hover {
+  border-color: var(--primary-light);
+}
+
+.form-control::placeholder {
+  color: var(--neutral-400);
+  font-weight: 400;
+}
+
+/* Modern Form Select */
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px 12px;
+  padding-right: 2.5rem !important;
+}
+
+/* Form Group Layout */
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+/* Modern Form Label */
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--neutral-700);
+  font-size: 0.875rem;
+  letter-spacing: 0.015em;
+}
+
+/* Form Error Messages */
+.form-error {
+  color: var(--error);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Form Validation States */
+.form-control.is-invalid {
+  border-color: var(--error);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23EF4444' viewBox='0 0 16 16'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px 16px;
+  padding-right: 2.5rem !important;
+}
+
+.form-control.is-valid {
+  border-color: var(--success);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2310B981' viewBox='0 0 16 16'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px 16px;
+  padding-right: 2.5rem !important;
 }

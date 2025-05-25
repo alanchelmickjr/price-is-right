@@ -112,22 +112,30 @@ function UserItemsPage() {
         </h1>
         
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <Link href="/items/scan" className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-6 rounded-lg text-center hover:from-orange-600 hover:to-red-600 transition-all shadow-lg">
-            📷 AI Scan Items
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <Link href="/items/scan" className="flex-1 neumorphic-button py-3 px-6 text-center animate-fade-in"
+            style={{ background: 'linear-gradient(135deg, #f97316, #ef4444)', color: 'white' }}>
+            <div className="flex items-center justify-center gap-2">
+              <span className="neumorphic-mini-circle w-8 h-8 bg-white/20 text-white flex-shrink-0">📷</span>
+              <span>AI Scan Items</span>
+            </div>
           </Link>
-          <Link href="/items/new" className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold py-3 px-6 rounded-lg text-center hover:from-blue-600 hover:to-purple-600 transition-all shadow-lg">
-            ➕ Add New Item
+          <Link href="/items/new" className="flex-1 neumorphic-button py-3 px-6 text-center animate-fade-in"
+            style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent-dark))', color: 'white' }}>
+            <div className="flex items-center justify-center gap-2">
+              <span className="neumorphic-mini-circle w-8 h-8 bg-white/20 text-white flex-shrink-0">➕</span>
+              <span>Add New Item</span>
+            </div>
           </Link>
         </div>
 
         {/* Filter Controls */}
         <div className="mb-6">
-          <label className="block text-gray-700 font-semibold mb-2">Filter by Status:</label>
-          <select 
-            value={filterStatus} 
+          <label className="form-label mb-2">Filter by Status:</label>
+          <select
+            value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="neumorphic-input mobile-select"
           >
             <option value="all">All Items</option>
             <option value="recognized">📱 Recognized</option>
@@ -173,22 +181,22 @@ function UserItemsPage() {
             </div>
           ) : (
             filteredItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+              <div key={item.id} className="neumorphic-card neumorphic-card-hover p-6 animate-slide-up">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex-1 mb-4 lg:mb-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <Link href={`/items/${item.id}`} className="text-xl font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                      <Link href={`/items/${item.id}`} className="text-xl font-bold text-primary hover:text-primary-dark transition-colors">
                         {item.name || 'Untitled Item'}
                       </Link>
-                      <span 
-                        className="px-2 py-1 rounded-full text-xs font-semibold text-white"
+                      <span
+                        className="badge px-2 py-1 rounded-full text-xs font-semibold text-white"
                         style={{ backgroundColor: getStatusColor(item.status || 'recognized') }}
                       >
                         {item.status || 'recognized'}
                       </span>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-neutral-600 mb-3">
                       <p>📂 Category: {item.category || 'Uncategorized'}</p>
                       <p>🏷️ Condition: {item.condition || 'Unknown'}</p>
                       <p>🎯 Confidence: {Math.round((item.confidence || 0.75) * 100)}%</p>
@@ -196,34 +204,35 @@ function UserItemsPage() {
                     </div>
 
                     {item.price && (
-                      <p className="text-lg font-bold text-green-600 mb-2">
+                      <p className="text-lg font-bold text-success mb-2">
                         💰 {item.price}
                       </p>
                     )}
 
                     {item.description && (
-                      <p className="text-gray-700 text-sm mb-3 line-clamp-2">
+                      <p className="text-neutral-700 text-sm mb-3 line-clamp-2">
                         {item.description.length > 100 ? `${item.description.substring(0, 100)}...` : item.description}
                       </p>
                     )}
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-2 lg:ml-4">
-                    <Link 
+                    <Link
                       href={`/items/${item.id}`}
-                      className="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-center"
+                      className="neumorphic-button-primary py-2 px-4 text-center"
                     >
                       📝 Edit
                     </Link>
-                    <Link 
+                    <Link
                       href={`/api/items/${item.id}/create-ebay-listing`}
-                      className="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors text-center"
+                      className="neumorphic-button-secondary py-2 px-4 text-center"
                     >
                       🔗 List on eBay
                     </Link>
                     <button
                       onClick={() => handleDeleteItem(item.id)}
-                      className="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
+                      className="neumorphic-button py-2 px-4 text-center"
+                      style={{ background: 'linear-gradient(135deg, #f87171, #ef4444)', color: 'white' }}
                     >
                       🗑️ Delete
                     </button>

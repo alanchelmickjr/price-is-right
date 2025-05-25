@@ -348,99 +348,225 @@ function ItemDetailPage() {
   if (!item && !isLoading) return <div>Item not found or you might not have access.</div>;
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: 'auto' }}>
-      <Link href="/items" legacyBehavior>
-        <a style={{ display: 'inline-block', marginBottom: '20px', color: '#0070f3', textDecoration: 'none' }}>&larr; Back to Inventory</a>
+    <div className="app-container py-6">
+      <Link href="/items" className="inline-block mb-4 text-primary hover:text-primary-dark transition-colors">
+        <div className="flex items-center gap-2">
+          <span className="neumorphic-mini-circle w-6 h-6 flex items-center justify-center">&larr;</span>
+          <span>Back to Inventory</span>
+        </div>
       </Link>
       
       {item && (
         <>
           {!isEditing ? (
-            <>
-              <h1 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px' }}>{item.item_name}</h1>
-              <div style={{ marginBottom: '30px' }}>
-                <p><strong>Description:</strong> {item.description || 'N/A'}</p>
-                <p><strong>Status:</strong> <span style={{fontWeight: 'bold', color: item.status === 'new' ? 'green' : 'gray'}}>{item.status}</span></p>
-                <p><strong>Created At:</strong> {new Date(item.created_at).toLocaleString()}</p>
-                <p><strong>Last Updated:</strong> {new Date(item.updated_at).toLocaleString()}</p>
+            <div className="neumorphic-card p-6 animate-fade-in">
+              <h1 className="text-2xl font-bold border-b border-neutral-200 pb-3 mb-6">{item.item_name}</h1>
+              <div className="grid gap-4 mb-6">
+                <p><span className="font-semibold text-neutral-700">Description:</span> {item.description || 'N/A'}</p>
+                <p>
+                  <span className="font-semibold text-neutral-700">Status:</span>
+                  <span className={`ml-2 badge ${item.status === 'new' ? 'badge-success' : 'badge-primary'}`}>
+                    {item.status}
+                  </span>
+                </p>
+                <p><span className="font-semibold text-neutral-700">Created At:</span> {new Date(item.created_at).toLocaleString()}</p>
+                <p><span className="font-semibold text-neutral-700">Last Updated:</span> {new Date(item.updated_at).toLocaleString()}</p>
               </div>
-            </>
+            </div>
           ) : (
-            <form onSubmit={handleUpdateItem} style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-              <h2>Edit Item</h2>
-              <div style={formRowStyle}>
-                <label htmlFor="itemName" style={labelStyle}>Item Name:</label>
-                <input type="text" id="itemName" name="itemName" value={editFormData.itemName} onChange={handleInputChange} required style={inputStyle} />
+            <form onSubmit={handleUpdateItem} className="neumorphic-card p-6 mb-8 animate-fade-in">
+              <h2 className="text-xl font-bold mb-6">Edit Item</h2>
+              <div className="form-group">
+                <label htmlFor="itemName" className="form-label">Item Name:</label>
+                <input
+                  type="text"
+                  id="itemName"
+                  name="itemName"
+                  value={editFormData.itemName}
+                  onChange={handleInputChange}
+                  required
+                  className="neumorphic-input"
+                />
               </div>
-              <div style={formRowStyle}>
-                <label htmlFor="description" style={labelStyle}>Description:</label>
-                <textarea id="description" name="description" value={editFormData.description} onChange={handleInputChange} style={{...inputStyle, minHeight: '80px'}} />
+              <div className="form-group">
+                <label htmlFor="description" className="form-label">Description:</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={editFormData.description}
+                  onChange={handleInputChange}
+                  className="neumorphic-input"
+                  style={{minHeight: '100px'}}
+                />
               </div>
-              <div style={formRowStyle}>
-                <label htmlFor="status" style={labelStyle}>Status:</label>
-                <select id="status" name="status" value={editFormData.status} onChange={handleInputChange} style={inputStyle}>
-                  {VALID_ITEM_STATUSES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).replace('_', ' ')}</option>)}
+              <div className="form-group">
+                <label htmlFor="status" className="form-label">Status:</label>
+                <select
+                  id="status"
+                  name="status"
+                  value={editFormData.status}
+                  onChange={handleInputChange}
+                  className="neumorphic-input mobile-select"
+                >
+                  {VALID_ITEM_STATUSES.map(s => (
+                    <option key={s} value={s}>
+                      {s.charAt(0).toUpperCase() + s.slice(1).replace('_', ' ')}
+                    </option>
+                  ))}
                 </select>
               </div>
-              <div style={formRowStyle}>
-                <label htmlFor="suggestedPriceRangeMin" style={labelStyle}>Suggested Price Min ($):</label>
-                <input type="number" step="0.01" id="suggestedPriceRangeMin" name="suggestedPriceRangeMin" value={editFormData.suggestedPriceRangeMin} onChange={handleInputChange} style={inputStyle} placeholder="e.g., 10.00" />
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="suggestedPriceRangeMin" className="form-label">Suggested Price Min ($):</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="suggestedPriceRangeMin"
+                    name="suggestedPriceRangeMin"
+                    value={editFormData.suggestedPriceRangeMin}
+                    onChange={handleInputChange}
+                    className="neumorphic-input"
+                    placeholder="e.g., 10.00"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="suggestedPriceRangeMax" className="form-label">Suggested Price Max ($):</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="suggestedPriceRangeMax"
+                    name="suggestedPriceRangeMax"
+                    value={editFormData.suggestedPriceRangeMax}
+                    onChange={handleInputChange}
+                    className="neumorphic-input"
+                    placeholder="e.g., 20.00"
+                  />
+                </div>
               </div>
-              <div style={formRowStyle}>
-                <label htmlFor="suggestedPriceRangeMax" style={labelStyle}>Suggested Price Max ($):</label>
-                <input type="number" step="0.01" id="suggestedPriceRangeMax" name="suggestedPriceRangeMax" value={editFormData.suggestedPriceRangeMax} onChange={handleInputChange} style={inputStyle} placeholder="e.g., 20.00" />
-              </div>
-              {updateError && <p style={{color: 'red', marginTop: '10px'}}>{updateError}</p>}
-              <div style={buttonGroupStyle}>
-                <button type="submit" disabled={isUpdating || !sessionToken} style={{padding: '10px 15px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px'}}>
+              {updateError && (
+                <div className="glass-card mt-4 p-4 border-l-4 border-red-500 animate-fade-in">
+                  <p className="text-red-600">{updateError}</p>
+                </div>
+              )}
+              <div className="button-container mt-6">
+                <button
+                  type="submit"
+                  disabled={isUpdating || !sessionToken}
+                  className="neumorphic-button-primary"
+                >
                   {isUpdating ? 'Saving...' : 'Save Changes'}
                 </button>
-                <button type="button" onClick={handleEditToggle} style={{padding: '10px 15px', cursor: 'pointer', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px'}}>
+                <button
+                  type="button"
+                  onClick={handleEditToggle}
+                  className="neumorphic-button"
+                >
                   Cancel
                 </button>
               </div>
             </form>
           )}
             
-          <div style={{marginTop: '20px', marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+          <div className="flex flex-wrap gap-3 my-6">
             {!isEditing && (
-                 <button onClick={handleEditToggle} disabled={!sessionToken} style={{padding: '10px 15px', cursor: 'pointer', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', opacity: !sessionToken ? 0.5 : 1}}>
-                    ✏️ Edit Item
-                </button>
+              <button
+                onClick={handleEditToggle}
+                disabled={!sessionToken}
+                className={`neumorphic-button ${!sessionToken ? 'opacity-50' : ''}`}
+              >
+                <span className="flex items-center gap-2">
+                  <span>✏️</span>
+                  <span>Edit Item</span>
+                </span>
+              </button>
             )}
-            <button onClick={handleRecognizeItem} disabled={isRecognizing || !sessionToken || isEditing} style={{padding: '10px 15px', cursor: 'pointer', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', opacity: (isRecognizing || !sessionToken || isEditing) ? 0.5 : 1}}>
-              {isRecognizing ? 'Recognizing Item...' : '🤖 Recognize Item with AI'}
+            <button
+              onClick={handleRecognizeItem}
+              disabled={isRecognizing || !sessionToken || isEditing}
+              className={`neumorphic-button-primary ${(isRecognizing || !sessionToken || isEditing) ? 'opacity-50' : ''}
+                relative overflow-hidden transition-all duration-300 hover:shadow-lg`}
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-lg">🤖</span>
+                <span>{isRecognizing ? 'Recognizing...' : 'Recognize with AI'}</span>
+              </span>
+              {/* Add subtle glow effect for active button */}
+              {!isRecognizing && !isEditing && sessionToken && (
+                <div className="absolute -inset-1 opacity-20 bg-gradient-to-r from-purple-400 via-blue-500 to-indigo-500 blur-sm"></div>
+              )}
             </button>
-            <button onClick={handleSuggestPrice} disabled={isSuggestingPrice || !sessionToken || isEditing} style={{padding: '10px 15px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', opacity: (isSuggestingPrice || !sessionToken || isEditing) ? 0.5 : 1}}>
-              {isSuggestingPrice ? 'Suggesting Price...' : '💰 Suggest Price from eBay'}
+            <button
+              onClick={handleSuggestPrice}
+              disabled={isSuggestingPrice || !sessionToken || isEditing}
+              className={`neumorphic-button-primary ${(isSuggestingPrice || !sessionToken || isEditing) ? 'opacity-50' : ''}
+                relative overflow-hidden transition-all duration-300 hover:shadow-lg`}
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-lg">💰</span>
+                <span>{isSuggestingPrice ? 'Suggesting Price...' : 'Suggest Price'}</span>
+              </span>
+              {/* Add subtle glow effect for active button */}
+              {!isSuggestingPrice && !isEditing && sessionToken && (
+                <div className="absolute -inset-1 opacity-20 bg-gradient-to-r from-green-400 via-green-500 to-teal-500 blur-sm"></div>
+              )}
             </button>
             <button
               onClick={handleCreateEbayListing}
               disabled={isListingOnEbay || !sessionToken || item.status === 'listed_on_ebay' || isEditing}
-              style={{
-                padding: '10px 15px',
-                cursor: 'pointer',
-                backgroundColor: item.status === 'listed_on_ebay' ? '#ccc' : '#ffc107',
-                color: 'black',
-                border: 'none',
-                borderRadius: '5px',
-                fontSize: '16px',
-                opacity: (isListingOnEbay || !sessionToken || item.status === 'listed_on_ebay' || isEditing) ? 0.5 : 1
-              }}
+              className={`${item.status === 'listed_on_ebay' ? 'neumorphic-button-disabled' : 'neumorphic-button-accent'}
+                ${(isListingOnEbay || !sessionToken || item.status === 'listed_on_ebay' || isEditing) ? 'opacity-50' : ''}
+                relative overflow-hidden transition-all duration-300 hover:shadow-lg`}
             >
-              {isListingOnEbay ? 'Listing on eBay...' : (item.status === 'listed_on_ebay' ? '✅ Already Listed' : '🚀 List on eBay')}
+              <span className="flex items-center gap-2">
+                <span className="text-lg">{item.status === 'listed_on_ebay' ? '✅' : '🚀'}</span>
+                <span>
+                  {isListingOnEbay ? 'Listing on eBay...' : (item.status === 'listed_on_ebay' ? 'Already Listed' : 'List on eBay')}
+                </span>
+              </span>
+              {/* Add subtle glow effect for active button */}
+              {!isListingOnEbay && !isEditing && item.status !== 'listed_on_ebay' && sessionToken && (
+                <div className="absolute -inset-1 opacity-20 bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 blur-sm"></div>
+              )}
             </button>
             {!isEditing && (
-                <button onClick={() => setShowDeleteConfirm(true)} disabled={!sessionToken} style={{padding: '10px 15px', cursor: 'pointer', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', opacity: !sessionToken ? 0.5 : 1, marginLeft: 'auto'}}>
-                    🗑️ Delete Item
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={!sessionToken}
+                  className={`neumorphic-button-danger ml-auto ${!sessionToken ? 'opacity-50' : ''}
+                    relative overflow-hidden transition-all duration-300 hover:shadow-lg`}
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg">🗑️</span>
+                    <span>Delete Item</span>
+                  </span>
+                  {/* Add subtle glow effect for active button */}
+                  {sessionToken && (
+                    <div className="absolute -inset-1 opacity-20 bg-gradient-to-r from-red-400 via-red-500 to-pink-500 blur-sm"></div>
+                  )}
                 </button>
             )}
           </div>
-          <div>
-            {recognitionError && <p style={{color: 'red', marginTop: '5px'}}>AI Error: {recognitionError}</p>}
-            {priceSuggestionError && <p style={{color: 'red', marginTop: '5px'}}>Price Suggestion Error: {priceSuggestionError}</p>}
-            {ebayListingError && <p style={{color: 'red', marginTop: '5px'}}>eBay Listing Error: {ebayListingError}</p>}
-            {deleteError && <p style={{color: 'red', marginTop: '5px'}}>Delete Error: {deleteError}</p>}
+          <div className="mt-4">
+            {recognitionError && (
+              <div className="glass-card p-4 my-3 border-l-4 border-red-500 animate-fade-in">
+                <p className="text-red-600"><strong>AI Error:</strong> {recognitionError}</p>
+              </div>
+            )}
+            {priceSuggestionError && (
+              <div className="glass-card p-4 my-3 border-l-4 border-red-500 animate-fade-in">
+                <p className="text-red-600"><strong>Price Suggestion Error:</strong> {priceSuggestionError}</p>
+              </div>
+            )}
+            {ebayListingError && (
+              <div className="glass-card p-4 my-3 border-l-4 border-red-500 animate-fade-in">
+                <p className="text-red-600"><strong>eBay Listing Error:</strong> {ebayListingError}</p>
+              </div>
+            )}
+            {deleteError && (
+              <div className="glass-card p-4 my-3 border-l-4 border-red-500 animate-fade-in">
+                <p className="text-red-600"><strong>Delete Error:</strong> {deleteError}</p>
+              </div>
+            )}
           </div>
 
           {/* Image Uploader Section */}
@@ -508,15 +634,24 @@ function ItemDetailPage() {
               backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', zIndex: 1000
             }}>
-              <div style={{backgroundColor: 'white', padding: '30px', borderRadius: '8px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)'}}>
+              <div className="glass-card" style={{padding: '30px', textAlign: 'center', maxWidth: '400px', width: '90%'}}>
                 <h3 style={{marginTop: 0, marginBottom: '15px'}}>Confirm Deletion</h3>
                 <p style={{marginBottom: '25px'}}>Are you sure you want to delete this item? This action cannot be undone.</p>
-                {deleteError && <p style={{color: 'red', marginBottom: '15px'}}>{deleteError}</p>}
+                {deleteError && <p style={{color: 'var(--error)', marginBottom: '15px'}}>{deleteError}</p>}
                 <div style={buttonGroupStyle}>
-                  <button onClick={handleDeleteItem} disabled={isDeleting} style={{padding: '10px 20px', cursor: 'pointer', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px'}}>
+                  <button
+                    onClick={handleDeleteItem}
+                    disabled={isDeleting}
+                    className="neumorphic-button"
+                    style={{backgroundColor: 'var(--error)', color: 'white'}}
+                  >
                     {isDeleting ? 'Deleting...' : 'Yes, Delete Item'}
                   </button>
-                  <button onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }} disabled={isDeleting} style={{padding: '10px 20px', cursor: 'pointer', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px'}}>
+                  <button
+                    onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
+                    disabled={isDeleting}
+                    className="neumorphic-button"
+                  >
                     Cancel
                   </button>
                 </div>
