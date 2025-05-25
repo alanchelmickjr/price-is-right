@@ -210,16 +210,6 @@ export default function Dashboard() {
     }
   ];
 
-  // Recent activity is now derived from Gun.js data in real-time
-  const recentActivity = recentItems.map(item => ({
-    item: item.name || 'Unknown Item',
-    status: item.status === 'sold' ? 'Sold' : 
-           item.status === 'listed' ? 'Listed' : 
-           item.status === 'pending' ? 'Pending' : 'Draft',
-    value: item.price ? `$${parseFloat(item.price).toFixed(2)}` : '—',
-    time: getTimeAgo(item.createdAt)
-  }));
-
   // Helper function to format time ago
   const getTimeAgo = (timestamp) => {
     if (!timestamp) return 'Unknown';
@@ -272,26 +262,35 @@ export default function Dashboard() {
         <meta name="description" content="Your AI-powered selling dashboard" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+      <div className="min-h-screen" style={{background: "linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-tertiary) 100%)"}}>
+        {/* Animated background elements */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-violet-400 to-purple-500 rounded-full blur-xl animate-pulse floating-particle-1"></div>
+          <div className="absolute bottom-20 right-10 w-24 h-24 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full blur-xl animate-pulse delay-1000 floating-particle-2"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-gradient-to-r from-pink-400 to-rose-500 rounded-full blur-xl animate-pulse delay-500 floating-particle-3"></div>
+        </div>
+        
         {/* Header */}
-        <div className="neumorphic-header p-6 mb-6">
+        <div className="neumorphic-card p-6 mb-6 mx-6 mt-6 relative z-10">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Simply eBay</h1>
-              <p className="text-gray-600">Welcome back, {user?.email?.split('@')[0] || 'there'}!</p>
+              <h1 className="text-2xl font-bold text-gradient">Simply eBay</h1>
+              <p className="text-sm" style={{color: "var(--text-secondary)"}}>Welcome back, {user?.email?.split('@')[0] || 'there'}!</p>
             </div>
             <div className="flex space-x-4">
               {/* AI Test Chat Button */}
               <button
                 onClick={() => setChatOpen(true)}
-                className="neumorphic-button-mini w-12 h-12 rounded-full flex items-center justify-center"
+                className="neumorphic-button w-12 h-12 rounded-full flex items-center justify-center text-lg hover-lift"
+                title="AI Assistant"
               >
                 🧠
               </button>
               {/* Settings/Logout */}
               <button
                 onClick={logout}
-                className="neumorphic-button-mini w-12 h-12 rounded-full flex items-center justify-center"
+                className="neumorphic-button w-12 h-12 rounded-full flex items-center justify-center text-lg hover-lift"
+                title="Logout"
               >
                 👋
               </button>
@@ -299,34 +298,66 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="px-6 space-y-6">
+        <div className="px-6 space-y-6 relative z-10">
           {/* Stats Overview */}
           <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="neumorphic-card p-6 text-center hover-lift">
+              <div className="text-3xl font-bold mb-2" style={{color: "var(--primary)"}}>
+                {loading ? '...' : stats.totalItems}
+              </div>
+              <div className="text-sm font-medium" style={{color: "var(--text-secondary)"}}>Total Items</div>
+            </div>
+            <div className="neumorphic-card p-6 text-center hover-lift">
+              <div className="text-3xl font-bold mb-2" style={{color: "var(--secondary)"}}>
+                {loading ? '...' : `$${stats.totalValue.toFixed(0)}`}
+              </div>
+              <div className="text-sm font-medium" style={{color: "var(--text-secondary)"}}>Total Value</div>
+            </div>
+          </div>
+
+          {/* Enhanced Stats Grid */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="neumorphic-card p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">{stats.totalItems}</div>
-              <div className="text-sm text-gray-600">Total Items</div>
+              <div className="text-xl font-bold" style={{color: "var(--accent)"}}>
+                {loading ? '...' : stats.itemsScannedToday}
+              </div>
+              <div className="text-xs" style={{color: "var(--text-tertiary)"}}>Today</div>
             </div>
             <div className="neumorphic-card p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">${stats.totalValue}</div>
-              <div className="text-sm text-gray-600">Total Value</div>
+              <div className="text-xl font-bold" style={{color: "var(--primary-dark)"}}>
+                {loading ? '...' : stats.pendingListings}
+              </div>
+              <div className="text-xs" style={{color: "var(--text-tertiary)"}}>Pending</div>
+            </div>
+            <div className="neumorphic-card p-4 text-center">
+              <div className="text-xl font-bold" style={{color: "var(--secondary-dark)"}}>
+                {loading ? '...' : stats.soldItems}
+              </div>
+              <div className="text-xs" style={{color: "var(--text-tertiary)"}}>Sold</div>
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800">Quick Actions</h2>
+            <h2 className="text-xl font-bold" style={{color: "var(--text-primary)"}}>Quick Actions</h2>
             <div className="grid grid-cols-2 gap-4">
               {quickActions.map((action, index) => (
                 <button
                   key={index}
                   onClick={action.action}
-                  className={`neumorphic-card p-6 text-left transition-all duration-300 hover:scale-105 ${
-                    action.primary ? 'neumorphic-primary' : ''
+                  className={`neumorphic-card p-6 text-left hover-lift hover-glow transition-all ${
+                    action.primary ? 'neumorphic-button-primary text-white' : ''
                   }`}
                 >
-                  <div className="text-3xl mb-2">{action.icon}</div>
-                  <div className="font-semibold text-gray-800">{action.title}</div>
-                  <div className="text-sm text-gray-600">{action.subtitle}</div>
+                  <div className="text-3xl mb-3">{action.icon}</div>
+                  <div className={`font-bold text-lg mb-1 ${action.primary ? 'text-white' : ''}`} 
+                       style={!action.primary ? {color: "var(--text-primary)"} : {}}>
+                    {action.title}
+                  </div>
+                  <div className={`text-sm ${action.primary ? 'text-white opacity-90' : ''}`}
+                       style={!action.primary ? {color: "var(--text-secondary)"} : {}}>
+                    {action.subtitle}
+                  </div>
                 </button>
               ))}
             </div>
@@ -334,55 +365,92 @@ export default function Dashboard() {
 
           {/* Recent Activity */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800">Recent Activity</h2>
-            <div className="neumorphic-card p-4 space-y-3">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex justify-between items-center py-2">
-                  <div>
-                    <div className="font-medium text-gray-800">{activity.item}</div>
-                    <div className="text-sm text-gray-600">{activity.status} • {activity.time}</div>
+            <h2 className="text-xl font-bold" style={{color: "var(--text-primary)"}}>Recent Activity</h2>
+            <div className="neumorphic-card p-6 space-y-4">
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="skeleton-loader h-16"></div>
+                  ))}
+                </div>
+              ) : recentItems.length > 0 ? (
+                recentItems.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center py-3 border-b border-opacity-20 last:border-b-0" 
+                       style={{borderColor: "var(--text-tertiary)"}}>
+                    <div className="flex-1">
+                      <div className="font-semibold" style={{color: "var(--text-primary)"}}>
+                        {item.name}
+                      </div>
+                      <div className="text-sm" style={{color: "var(--text-secondary)"}}>
+                        {item.status} • {new Date(item.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-lg" style={{color: "var(--primary)"}}>
+                        ${item.price}
+                      </div>
+                      <div className="text-xs badge badge-secondary">
+                        {Math.round(item.aiConfidence * 100)}% AI
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-800">{activity.value}</div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">📦</div>
+                  <div className="font-medium" style={{color: "var(--text-secondary)"}}>
+                    No items yet
+                  </div>
+                  <div className="text-sm" style={{color: "var(--text-tertiary)"}}>
+                    Start by scanning your first item!
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
           {/* Privacy Notice */}
-          <div className="neumorphic-card p-4 bg-gradient-to-r from-blue-50 to-green-50">
-            <div className="flex items-start space-x-3">
-              <div className="text-2xl">🔒</div>
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-1">100% Private & Local</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+          <div className="glass-morphism-strong p-6">
+            <div className="flex items-start space-x-4">
+              <div className="text-3xl">🔒</div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg mb-2" style={{color: "var(--text-primary)"}}>
+                  100% Private & Local
+                </h3>
+                <p className="text-sm leading-relaxed" style={{color: "var(--text-secondary)"}}>
                   Your photos and data stay on your device. AI processing happens locally. 
                   Nothing shared unless you choose to list an item.
                 </p>
+                <div className="flex items-center gap-2 mt-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium" style={{color: "var(--secondary)"}}>
+                    Local AI Active
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Terms & Privacy Links */}
-          <div className="text-center space-x-4 text-sm text-gray-500 pb-8">
+          <div className="text-center space-x-4 text-sm pb-8" style={{color: "var(--text-tertiary)"}}>
             <button 
               onClick={() => router.push('/terms')}
-              className="underline hover:text-gray-700 transition-colors"
+              className="neumorphic-button px-4 py-2 text-sm"
+              style={{color: "var(--text-secondary)"}}
             >
               Terms of Service
             </button>
-            <span>•</span>
             <button 
               onClick={() => router.push('/privacy')}
-              className="underline hover:text-gray-700 transition-colors"
+              className="neumorphic-button px-4 py-2 text-sm"
+              style={{color: "var(--text-secondary)"}}
             >
               Privacy Policy
             </button>
-            <span>•</span>
             <button 
               onClick={() => router.push('/about')}
-              className="underline hover:text-gray-700 transition-colors"
+              className="neumorphic-button px-4 py-2 text-sm"
+              style={{color: "var(--text-secondary)"}}
             >
               About
             </button>
@@ -392,73 +460,88 @@ export default function Dashboard() {
         {/* AI Chat Popup */}
         {chatOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-[500px] overflow-hidden animate-scale-up">
-              <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white">
+            <div className="glass-morphism-strong max-w-sm w-full max-h-[500px] overflow-hidden animate-slide-up">
+              <div className="bg-gradient-to-r from-primary to-primary-dark p-6 text-white">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-lg font-bold">🧠 Simply eBay AI</h3>
+                    <h3 className="text-xl font-bold">🧠 Simply eBay AI</h3>
                     <p className="text-sm opacity-90">Your local selling assistant</p>
                   </div>
                   <button
                     onClick={() => setChatOpen(false)}
-                    className="text-white hover:text-gray-200 text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-20 transition-all"
+                    className="text-white hover:text-gray-200 text-2xl w-10 h-10 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-20 transition-all"
                     aria-label="Close AI chat"
                   >
                     ×
                   </button>
                 </div>
               </div>
-              <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
-                <div className="space-y-3">
-                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-3 border border-orange-200">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-lg">👋</span>
-                      <span className="font-semibold text-orange-800">Hi there!</span>
+              <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
+                <div className="space-y-4">
+                  <div className="neumorphic-card p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <span className="text-2xl">👋</span>
+                      <span className="font-bold" style={{color: "var(--primary)"}}>Hi there!</span>
                     </div>
-                    <p className="text-sm text-orange-700">
+                    <p className="text-sm" style={{color: "var(--text-secondary)"}}>
                       I'm your local AI assistant, running entirely on your device. I can help you sell more effectively!
                     </p>
                   </div>
                   
-                  <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                    <h4 className="font-semibold text-blue-800 mb-2 flex items-center">
+                  <div className="neumorphic-card p-4">
+                    <h4 className="font-bold mb-3 flex items-center" style={{color: "var(--text-primary)"}}>
                       <span className="mr-2">🎯</span>
                       What I can help with:
                     </h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>• 📸 Identify items from photos instantly</li>
-                      <li>• 💰 Research current market prices</li>
-                      <li>• ✍️ Write compelling listing descriptions</li>
-                      <li>• 📊 Suggest optimal pricing strategies</li>
-                      <li>• ❓ Answer eBay selling questions</li>
+                    <ul className="text-sm space-y-2" style={{color: "var(--text-secondary)"}}>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
+                        📸 Identify items from photos instantly
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-secondary rounded-full mr-3"></span>
+                        💰 Research current market prices
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-accent rounded-full mr-3"></span>
+                        ✍️ Write compelling descriptions
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-primary-dark rounded-full mr-3"></span>
+                        📊 Suggest optimal pricing
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-secondary-dark rounded-full mr-3"></span>
+                        ❓ Answer eBay questions
+                      </li>
                     </ul>
                   </div>
 
-                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-lg">🔒</span>
-                      <span className="font-semibold text-green-800">100% Private</span>
+                  <div className="neumorphic-card p-4">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="text-2xl">🔒</span>
+                      <span className="font-bold" style={{color: "var(--secondary)"}}>100% Private</span>
                     </div>
-                    <p className="text-xs text-green-700">
+                    <p className="text-xs" style={{color: "var(--text-tertiary)"}}>
                       All conversations stay on your device. No data leaves your phone unless you create a listing.
                     </p>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-2 gap-3 pt-4">
                   <button
                     onClick={() => {
                       setChatOpen(false);
                       router.push('/items/scan');
                     }}
-                    className="bg-orange-500 text-white px-3 py-3 rounded-xl hover:bg-orange-600 transition-colors text-sm font-medium shadow-md hover:shadow-lg flex items-center justify-center space-x-1"
+                    className="neumorphic-button-primary px-4 py-4 text-sm font-bold flex items-center justify-center space-x-2"
                   >
                     <span>📸</span>
                     <span>Scan Item</span>
                   </button>
                   <button
                     onClick={() => setChatOpen(false)}
-                    className="bg-blue-500 text-white px-3 py-3 rounded-xl hover:bg-blue-600 transition-colors text-sm font-medium shadow-md hover:shadow-lg flex items-center justify-center space-x-1"
+                    className="neumorphic-button-secondary px-4 py-4 text-sm font-bold flex items-center justify-center space-x-2"
                   >
                     <span>💬</span>
                     <span>Full Chat</span>
@@ -469,81 +552,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Neumorphic CSS Styles */}
-        <style jsx>{`
-          .neumorphic-header {
-            background: linear-gradient(145deg, #f0f0f0, #ffffff);
-            box-shadow: 
-              20px 20px 60px #d1d1d1,
-              -20px -20px 60px #ffffff;
-          }
-          
-          .neumorphic-card {
-            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
-            box-shadow: 
-              8px 8px 16px #d1d1d1,
-              -8px -8px 16px #ffffff;
-            border-radius: 20px;
-          }
-          
-          .neumorphic-card:hover {
-            box-shadow: 
-              12px 12px 24px #d1d1d1,
-              -12px -12px 24px #ffffff;
-          }
-          
-          .neumorphic-primary {
-            background: linear-gradient(145deg, #ff8c42, #ff6b1a);
-            color: white;
-            box-shadow: 
-              8px 8px 16px #d1d1d1,
-              -8px -8px 16px #ffffff;
-          }
-          
-          .neumorphic-primary:hover {
-            box-shadow: 
-              12px 12px 24px #d1d1d1,
-              -12px -12px 24px #ffffff;
-          }
-          
-          .neumorphic-button-mini {
-            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
-            box-shadow: 
-              5px 5px 10px #d1d1d1,
-              -5px -5px 10px #ffffff;
-          }
-          
-          .neumorphic-button-mini:active {
-            box-shadow: 
-              inset 5px 5px 10px #d1d1d1,
-              inset -5px -5px 10px #ffffff;
-          }
-
-          /* Animations */
-          @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          
-          @keyframes scale-up {
-            from {
-              opacity: 0;
-              transform: scale(0.9);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-          
-          .animate-fade-in {
-            animation: fade-in 0.3s ease-out forwards;
-          }
-          
-          .animate-scale-up {
-            animation: scale-up 0.3s ease-out forwards;
-          }
-        `}</style>
       </div>
     </>
   );
