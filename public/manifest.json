@@ -4,8 +4,8 @@
   "description": "AI-powered camera app to scan, identify, and list items on eBay instantly",
   "start_url": "/items/scan",
   "display": "standalone",
-  "background_color": "#1f2937",
-  "theme_color": "#ff6b35",
+  "background_color": "#f3f4f8",
+  "theme_color": "#3b82f6",
   "orientation": "portrait",
   "categories": ["shopping", "productivity", "utilities"],
   "icons": [

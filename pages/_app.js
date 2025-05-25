@@ -34,7 +34,7 @@ function MyApp({ Component, pageProps }) {
         <meta name="description" content="AI-powered camera app to scan, identify, and list items on eBay instantly" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#ff6b35" />
+        <meta name="theme-color" content="#3b82f6" />
         
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="manifest" href="/manifest.json" />

@@ -2,17 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Neumorphic Design System for Simply eBay */
+/* Modern Design System for Simply eBay */
 :root {
-  --neu-bg-primary: #e8ecf1;
-  --neu-bg-secondary: #f4f7fa;
+  /* Core Brand Colors */
+  --primary: #3b82f6;           /* Blue 500 */
+  --primary-dark: #1d4ed8;      /* Blue 700 */
+  --primary-light: #93c5fd;     /* Blue 300 */
+  
+  --secondary: #10b981;         /* Emerald 500 */
+  --secondary-dark: #047857;    /* Emerald 700 */
+  --secondary-light: #6ee7b7;   /* Emerald 300 */
+  
+  --accent: #0ea5e9;            /* Sky 500 */
+  --accent-dark: #0369a1;       /* Sky 700 */
+  --accent-light: #7dd3fc;      /* Sky 300 */
+  
+  /* Neutrals */
+  --neutral-50: #f9fafb;
+  --neutral-100: #f3f4f6;
+  --neutral-200: #e5e7eb;
+  --neutral-300: #d1d5db;
+  --neutral-400: #9ca3af;
+  --neutral-500: #6b7280;
+  --neutral-600: #4b5563;
+  --neutral-700: #374151;
+  --neutral-800: #1f2937;
+  --neutral-900: #111827;
+  
+  /* Semantic Colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  
+  /* Neumorphic System */
+  --neu-bg-primary: #f3f4f8;
+  --neu-bg-secondary: #ffffff;
   --neu-shadow-light: #ffffff;
-  --neu-shadow-dark: #d1d9e6;
+  --neu-shadow-dark: #d8dbe5;
   --neu-shadow-inset-light: #ffffff80;
-  --neu-shadow-inset-dark: #d1d9e680;
-  --neu-border-radius: 20px;
-  --neu-border-radius-lg: 30px;
-  --neu-border-radius-sm: 12px;
+  --neu-shadow-inset-dark: #d8dbe580;
+  
+  /* Borders & Radii */
+  --neu-border-radius: 16px;
+  --neu-border-radius-lg: 24px;
+  --neu-border-radius-sm: 8px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Animations */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -23,23 +67,26 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #e8ecf1 0%, #f4f7fa 100%);
-  color: #2d3748;
+  background: linear-gradient(135deg, var(--neu-bg-primary) 0%, var(--neu-bg-secondary) 100%);
+  color: var(--neutral-800);
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background-color var(--transition-normal);
 }
 
-/* Neumorphic Card System */
+/* Card System */
 .neumorphic-card {
-  background: var(--neu-bg-primary);
+  background: var(--neu-bg-secondary);
   border-radius: var(--neu-border-radius);
   box-shadow: 
-    12px 12px 24px var(--neu-shadow-dark),
-    -12px -12px 24px var(--neu-shadow-light);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    8px 8px 16px var(--neu-shadow-dark),
+    -8px -8px 16px var(--neu-shadow-light);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .neumorphic-card::before {
@@ -48,103 +95,157 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
 }
 
 .neumorphic-card-hover:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: 
-    16px 16px 32px var(--neu-shadow-dark),
-    -16px -16px 32px var(--neu-shadow-light);
+    10px 10px 20px var(--neu-shadow-dark),
+    -10px -10px 20px var(--neu-shadow-light),
+    0 5px 15px rgba(59, 130, 246, 0.1);
 }
 
-/* Neumorphic Inputs */
+/* Modern Card Components */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--neu-border-radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Controls */
 .neumorphic-input {
-  background: var(--neu-bg-primary);
-  border: none;
+  background: var(--neu-bg-secondary);
+  border: 1px solid var(--neutral-200);
   border-radius: var(--neu-border-radius-sm);
   box-shadow: 
-    inset 6px 6px 12px var(--neu-shadow-inset-dark),
-    inset -6px -6px 12px var(--neu-shadow-inset-light);
-  color: #2d3748;
+    inset 3px 3px 6px var(--neu-shadow-inset-dark),
+    inset -3px -3px 6px var(--neu-shadow-inset-light);
+  color: var(--neutral-800);
   font-size: 16px;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   outline: none;
   position: relative;
   z-index: 1;
+  padding: 12px 16px;
+  width: 100%;
 }
 
 .neumorphic-input:focus {
   box-shadow: 
-    inset 8px 8px 16px var(--neu-shadow-inset-dark),
-    inset -8px -8px 16px var(--neu-shadow-inset-light),
-    0 0 0 3px rgba(59, 130, 246, 0.1);
+    inset 2px 2px 5px var(--neu-shadow-inset-dark),
+    inset -2px -2px 5px var(--neu-shadow-inset-light),
+    0 0 0 3px rgba(var(--primary-light), 0.2);
+  border-color: var(--primary);
   transform: none !important;
 }
 
 .neumorphic-input::placeholder {
-  color: #9ca3af;
-  font-weight: 300;
+  color: var(--neutral-400);
+  font-weight: 400;
 }
 
-/* Neumorphic Buttons */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--neutral-700);
+  font-size: 0.875rem;
+}
+
+/* Modern Button System */
 .neumorphic-button {
-  background: var(--neu-bg-primary);
+  background: var(--neu-bg-secondary);
   border: none;
   border-radius: var(--neu-border-radius-sm);
   box-shadow: 
-    6px 6px 12px var(--neu-shadow-dark),
-    -6px -6px 12px var(--neu-shadow-light);
-  color: #374151;
+    4px 4px 10px var(--neu-shadow-dark),
+    -4px -4px 10px var(--neu-shadow-light);
+  color: var(--neutral-700);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   position: relative;
   overflow: hidden;
   min-width: 120px;
-  max-width: 200px;
+  max-width: 320px;
   width: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 12px 20px;
+  font-size: 1rem;
+  letter-spacing: 0.015em;
+}
+
+.neumorphic-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  opacity: 0.6;
 }
 
 .neumorphic-button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 
-    8px 8px 16px var(--neu-shadow-dark),
-    -8px -8px 16px var(--neu-shadow-light);
+    5px 5px 12px var(--neu-shadow-dark),
+    -5px -5px 12px var(--neu-shadow-light);
 }
 
 .neumorphic-button:active {
   transform: translateY(1px);
   box-shadow: 
-    inset 4px 4px 8px var(--neu-shadow-inset-dark),
-    inset -4px -4px 8px var(--neu-shadow-inset-light);
+    inset 3px 3px 6px var(--neu-shadow-inset-dark),
+    inset -3px -3px 6px var(--neu-shadow-inset-light);
 }
 
 .neumorphic-button-primary {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
   box-shadow: 
-    6px 6px 12px rgba(37, 99, 235, 0.3),
-    -6px -6px 12px rgba(59, 130, 246, 0.1);
+    4px 4px 10px rgba(37, 99, 235, 0.3),
+    -4px -4px 10px rgba(255, 255, 255, 0.1);
   min-width: 140px;
-  max-width: 320px;
 }
 
 .neumorphic-button-primary:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 
-    8px 8px 16px rgba(37, 99, 235, 0.4),
-    -8px -8px 16px rgba(59, 130, 246, 0.2);
+    6px 6px 12px rgba(37, 99, 235, 0.4),
+    -6px -6px 12px rgba(255, 255, 255, 0.2);
+}
+
+.neumorphic-button-secondary {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+  color: white;
+  box-shadow: 
+    4px 4px 10px rgba(16, 185, 129, 0.3),
+    -4px -4px 10px rgba(255, 255, 255, 0.1);
+}
+
+.neumorphic-button-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    6px 6px 12px rgba(16, 185, 129, 0.4),
+    -6px -6px 12px rgba(255, 255, 255, 0.2);
 }
 
 .neumorphic-button-oauth {
   background: white;
-  border: 1px solid #e5e7eb;
-  color: #374151;
+  border: 1px solid var(--neutral-200);
+  color: var(--neutral-700);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,45 +254,71 @@ body {
   min-width: 260px;
   max-width: 100%;
   width: 100%;
-  padding: 16px 20px;
+  padding: 14px 20px;
   box-shadow: 
-    6px 6px 12px rgba(209, 217, 230, 0.8),
-    -6px -6px 12px rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
-  transition: all 0.2s ease;
+    4px 4px 8px rgba(209, 217, 230, 0.6),
+    -4px -4px 8px rgba(255, 255, 255, 0.9);
+  border-radius: var(--neu-border-radius-sm);
+  transition: all var(--transition-fast);
 }
 
 .neumorphic-button-oauth:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  transform: translateY(-1px);
+  background: var(--neutral-50);
+  border-color: var(--neutral-300);
+  transform: translateY(-2px);
   box-shadow: 
-    8px 8px 16px rgba(209, 217, 230, 0.6),
-    -8px -8px 16px rgba(255, 255, 255, 1);
+    6px 6px 12px rgba(209, 217, 230, 0.5),
+    -6px -6px 12px rgba(255, 255, 255, 1);
+}
+
+.neumorphic-button-oauth svg,
+.neumorphic-button-oauth img {
+  width: 20px;
+  height: 20px;
 }
 
 /* Mini buttons */
 .neumorphic-button-mini {
-  background: var(--neu-bg-primary);
+  background: var(--neu-bg-secondary);
   border: none;
   border-radius: 50%;
   box-shadow: 
-    4px 4px 8px var(--neu-shadow-dark),
-    -4px -4px 8px var(--neu-shadow-light);
-  color: #374151;
+    3px 3px 6px var(--neu-shadow-dark),
+    -3px -3px 6px var(--neu-shadow-light);
+  color: var(--neutral-700);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
 }
 
 .neumorphic-button-mini:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 
-    6px 6px 12px var(--neu-shadow-dark),
-    -6px -6px 12px var(--neu-shadow-light);
+    4px 4px 8px var(--neu-shadow-dark),
+    -4px -4px 8px var(--neu-shadow-light);
+}
+
+.neumorphic-button-mini:active {
+  transform: translateY(1px);
+  box-shadow: 
+    inset 2px 2px 4px var(--neu-shadow-inset-dark),
+    inset -2px -2px 4px var(--neu-shadow-inset-light);
+}
+
+.neumorphic-button-mini.primary {
+  background: var(--primary);
+  color: white;
+}
+
+.neumorphic-button-mini.secondary {
+  background: var(--secondary);
+  color: white;
 }
 
 /* Form Button Containers */
@@ -436,11 +563,6 @@ input, textarea, select {
   }
 }
 
-/* Card spacing */
-.neumorphic-card + .neumorphic-card {
-  margin-top: 1.5rem;
-}
-
 /* Loading Animation */
 @keyframes neuPulse {
   0%, 100% {
@@ -457,4 +579,217 @@ input, textarea, select {
 
 .neumorphic-pulse {
   animation: neuPulse 2s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease forwards;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Page Transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+/* Mobile Optimized Form Elements */
+.mobile-select {
+  appearance: none;
+  background: var(--neu-bg-secondary) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B7280' viewBox='0 0 16 16'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>") no-repeat;
+  background-position: calc(100% - 16px) center;
+  padding-right: 40px !important;
+}
+
+.mobile-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid var(--neutral-300);
+  position: relative;
+  margin: 0;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background var(--transition-fast), border var(--transition-fast);
+}
+
+.mobile-checkbox:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.mobile-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Form Layout Components */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row > * {
+  flex: 1 1 280px;
+}
+
+/* Custom Badge Component */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 9999px;
+}
+
+.badge-primary {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.badge-secondary {
+  background: var(--secondary-light);
+  color: var(--secondary-dark);
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--success);
+}
+
+.badge-error {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--error);
+}
+
+/* PWA-specific Optimizations */
+@media (display-mode: standalone) {
+  /* Add bottom safe area padding for mobile PWA navigation */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  
+  /* For bottom navigation in PWA mode */
+  .pwa-nav-spacer {
+    height: calc(56px + env(safe-area-inset-bottom, 20px));
+  }
+}
+
+/* Mobile Bottom Navigation */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--neu-bg-secondary);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.mobile-nav-button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  color: var(--neutral-500);
+  font-size: 0.7rem;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+  gap: 4px;
+}
+
+.mobile-nav-button.active {
+  color: var(--primary);
+}
+
+.mobile-nav-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Loading & Skeleton States */
+.skeleton-loader {
+  background: linear-gradient(90deg, 
+    var(--neutral-100) 0%, 
+    var(--neutral-200) 50%, 
+    var(--neutral-100) 100%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: var(--neu-border-radius-sm);
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
