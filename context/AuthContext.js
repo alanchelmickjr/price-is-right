@@ -8,7 +8,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchUser = useCallback(async () => {
     setLoading(true);
@@ -26,8 +32,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+    if (mounted) {
+      fetchUser();
+    }
+  }, [fetchUser, mounted]);
 
   const register = async (email, password, confirmPassword) => {
     setLoading(true);

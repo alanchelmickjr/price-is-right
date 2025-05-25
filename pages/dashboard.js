@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../context/AuthContext';
+import StatusIndicators from '../components/layout/StatusIndicators';
 
 // Gun.js for local database
 let gun;
@@ -552,6 +553,8 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Status indicators */}
+        <StatusIndicators />
       </div>
     </>
   );

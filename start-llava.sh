@@ -30,11 +30,9 @@ echo ""
 # Start the llamafile server with optimal settings for eBay item recognition
 exec "$LLAMAFILE_PATH" \
     --server \
-    --host "$HOST" \
-    --port "$PORT" \
+    --v2 \
     --ctx-size 2048 \
     --threads $(sysctl -n hw.ncpu 2>/dev/null || nproc || echo 4) \
     --temp 0.1 \
-    --repeat-penalty 1.1 \
     --gpu-layers 0 \
     --log-disable

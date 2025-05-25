@@ -72,8 +72,11 @@
   box-sizing: border-box;
 }
 
-html {
+html, body {
   scroll-behavior: smooth;
+  /* Prevent flash of unstyled content */
+  visibility: visible;
+  opacity: 1;
 }
 
 body {
@@ -86,6 +89,36 @@ body {
   overflow-x: hidden;
   transition: background var(--transition-smooth), color var(--transition-smooth);
   line-height: 1.6;
+}
+
+/* Ensure flexbox containers start centered */
+.min-h-screen {
+  /* Force immediate centering to prevent jumps */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Enhanced centered layout for consistent positioning */
+.centered-layout {
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* Prevent layout shift */
+  contain: layout;
+}
+
+/* Prevent content jumping during hydration */
+.app-container {
+  position: relative;
+  width: 100%;
+  max-width: 28rem; /* 448px */
+  margin: 0 auto;
+  /* Maintain position during hydration */
+  contain: layout;
 }
 
 /* Enhanced Neumorphic Card System */
@@ -304,10 +337,13 @@ body {
 /* Container Layouts */
 .centered-layout {
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  position: relative;
+  /* Prevent layout shift */
+  contain: layout;
 }
 
 .form-container {
@@ -317,9 +353,12 @@ body {
 }
 
 .app-container {
-  max-width: 600px;
+  position: relative;
+  width: 100%;
+  max-width: 28rem; /* 448px */
   margin: 0 auto;
-  padding: 0 1rem;
+  /* Maintain position during hydration */
+  contain: layout;
 }
 
 /* Feature Cards */
@@ -673,4 +712,53 @@ body {
     box-shadow: none !important;
     border: 1px solid #e2e8f0 !important;
   }
+}
+
+/* Better text gradient fallback */
+.text-gradient {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899, #f59e0b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  /* Fallback for browsers that don't support background-clip */
+  color: #8b5cf6;
+  font-weight: 700;
+}
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .text-gradient {
+    color: transparent;
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Enhanced animations for splash screen */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0) translateX(0); 
+    opacity: 0.4; 
+  }
+  50% { 
+    transform: translateY(-20px) translateX(10px); 
+    opacity: 1; 
+  }
+}
+
+@keyframes progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.animate-float {
+  animation: float infinite ease-in-out;
+}
+
+.animate-progress {
+  animation: progress 2.5s ease-out forwards;
 }

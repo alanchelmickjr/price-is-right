@@ -40,10 +40,10 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link href="/auth/login" className="hover:text-gray-300">
+              <Link href="/login" className="hover:text-gray-300">
                 Login
               </Link>
-              <Link href="/auth/register" className="hover:text-gray-300">
+              <Link href="/onboarding" className="hover:text-gray-300">
                 Register
               </Link>
             </>
