@@ -1,109 +1,102 @@
-# Phase 3: Codebase Review Pseudocode Specification
+# Phase 3: Pseudocode – Login & gun.js Integration
 
-**Purpose:**  
-For each module in `components/`, `pages/`, `context/`, and `styles/`, define pseudocode for:
-- Major style/flow corrections
-- Mobile/PWA compliance improvements
-- Testability enhancements
-- TDD anchors for each correction
+## 1. Authentication Flow (eBay OAuth)
 
----
+```
+function handleLoginRequest(platform, userInput):
+    validate platform in [web, mobile]
+    validate userInput (redirectUri, state, etc.)
+    redirect user to eBay OAuth with correct params
+    // TEST: User is redirected to eBay OAuth with valid params
 
-## Pseudocode Structure
+function handleOAuthCallback(queryParams):
+    validate queryParams (code, state)
+    exchange code for accessToken/refreshToken (server-side)
+    if exchange fails:
+        return error (do not leak details)
+        // TEST: Invalid/expired code triggers secure error
+    fetch user profile from eBay
+    if user not found or email invalid:
+        return error
+        // TEST: Invalid user/email is rejected
+    create or update User entity
+    create Session and set secure cookie/token
+    // TEST: Session is created securely after OAuth
 
-For each module:
-- **Module Purpose & Scope**
-- **Major Corrections Needed**
-- **Pseudocode for Refactor/Enhancement**
-- **TDD Anchors**
+function logout(sessionId):
+    validate sessionId
+    revoke session and clear tokens
+    // TEST: User is logged out on all devices if requested
+```
 
----
+## 2. gun.js Data Sync Flow
 
-## Module Inventory
+```
+function initializeGunForUser(userId, session):
+    validate session is active and userId matches
+    connect to gun.js with user scope
+    // TEST: Only authenticated users can initialize gun.js
 
-### components/auth/AuthForm.js
-### components/auth/AuthGuard.js
-### components/camera/LiveCamera.js
-### components/camera/MobileCameraInterface.js
-### components/camera/ReticleOverlay.js
-### components/items/ImageUploader.js
-### components/layout/Header.js
-### components/layout/Layout.js
-### components/layout/StatusIndicators.js
+function syncUserData(userId, dataType, data):
+    validate dataType in allowed types
+    validate data against schema
+    if validation fails:
+        return error
+        // TEST: Invalid data is rejected
+    write data to user's gun.js node
+    // TEST: Data is written only to user's node
 
----
+function handleGunSyncError(error, context):
+    log error securely (no sensitive info)
+    retry with backoff if transient
+    escalate if persistent
+    // TEST: Sync errors are handled and logged securely
+```
 
-### pages/_app.js
-### pages/about.js
-### pages/dashboard.js
-### pages/index.js
-### pages/login.js
-### pages/onboarding.js
-### pages/privacy.js
-### pages/splash.js
-### pages/terms.js
+## 3. Session & Token Management
 
-#### pages/api/auth/login.js
-#### pages/api/auth/logout.js
-#### pages/api/auth/me.js
-#### pages/api/auth/register.js
-#### pages/api/items/[itemId].js
-#### pages/api/items/index.js
-#### pages/api/items/[itemId]/create-ebay-listing.js
-#### pages/api/items/[itemId]/recognize.js
-#### pages/api/items/[itemId]/suggest-price.js
-#### pages/api/items/images/upload.js
-#### pages/api/test/ebay-connection.js
-#### pages/api/test/gun-sync.js
-#### pages/api/test/vector-store.js
+```
+function validateSession(sessionId):
+    check sessionId format and expiry
+    if invalid or expired:
+        force re-authentication
+        // TEST: Expired/invalid sessions are rejected
 
-#### pages/items/[itemId].js
-#### pages/items/index-fixed.js
-#### pages/items/index.js
-#### pages/items/new.js
-#### pages/items/scan.js
+function refreshOAuthToken(userId, refreshToken):
+    validate refreshToken
+    request new accessToken from eBay
+    if fails, force re-authentication
+    // TEST: Token refresh failures handled securely
+```
 
----
+## 4. Security & Error Handling
 
-### context/AuthContext.js
+```
+function sanitizeUserInput(input):
+    apply strict validation and sanitization rules
+    // TEST: All user input is sanitized
 
----
+function handleUnauthorizedAccess(context):
+    deny request, log attempt, return generic error
+    // TEST: Unauthorized access is never granted or leaked
 
-### styles/globals-new.css
-### styles/globals.css
-### styles/globals.css.backup
+function handleDataCorruption(userId, nodeId):
+    alert user/admin, attempt recovery, log securely
+    // TEST: Data corruption triggers alert and recovery
+```
 
----
+## 5. DRY & Modularity
 
-## Example Module Section
-
-### components/auth/AuthForm.js
-
-**Purpose & Scope:**  
-Handles user authentication form UI and logic.
-
-**Major Corrections Needed:**  
-- Refactor duplicated validation logic  
-- Clarify data flow between form state and context  
-- Add error boundaries for async submit  
-- Ensure mobile-friendly input and offline support  
-- Enforce consistent style and accessibility
-
-**Pseudocode:**
-- Define explicit data flow: input → validation → context update
-- Extract validation to shared utility
-- Wrap form in error boundary
-- Add mobile input optimizations (touch, viewport)
-- Ensure offline feedback for submit
-- Apply consistent CSS classes
-
-**TDD Anchors:**  
-// TEST: Validation utility rejects invalid emails/passwords  
-// TEST: Error boundary displays fallback on async error  
-// TEST: Form is usable on mobile (touch, viewport, keyboard)  
-// TEST: Form submit works offline and provides feedback  
-// TEST: No duplicated validation logic remains
+- All validation, error handling, and logging are centralized in utility modules.
+- No duplicated logic in login, session, or gun.js sync flows.
+- All flows are testable via TDD anchors.
 
 ---
 
-_Repeat above structure for each module listed._
+## TDD Anchors (Summary)
+
+// TEST: Can a user log in securely and reliably via eBay OAuth?
+// TEST: Is gun.js data flow robust and free of race conditions or leaks?
+// TEST: Are there any duplicated or unrefactored code paths in login/data sync?
+// TEST: Is the system ready for human QA (clear errors, test hooks)?
+// TEST: All edge/error cases (invalid token, sync failure, unauthorized, data corruption) are handled

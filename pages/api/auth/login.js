@@ -93,41 +93,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Create user reference in Gun.js
-    const user = gun.user();
-    
-    // Attempt to authenticate with Gun.js SEA
-    const authPromise = new Promise((resolve, reject) => {
-      user.auth(email, password, (ack) => {
-        if (ack.err) {
-          reject(new Error(ack.err));
-        } else {
-          resolve(ack);
-        }
-      });
-    });
-
-    const authResult = await authPromise;
-    
-    // Create session-like object for compatibility
-    const sessionData = {
-      user: {
-        id: user.is?.pub || 'anonymous',
-        email: email,
-        authenticated: true,
-        provider: 'gun-p2p',
-        created_at: new Date().toISOString()
-      },
-      session: {
-        access_token: user.is?.pub || 'gun-session',
-        token_type: 'p2p',
-        expires_at: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-        provider: 'gun'
-      }
-    };
-
+    // Delegate Gun.js authentication to service layer
+    const sessionData = await gunDataService.loginUserWithSession(email, password);
     return res.status(200).json(sessionData);
-
   } catch (err) {
     console.error('Gun.js authentication error:', err.message);
     
