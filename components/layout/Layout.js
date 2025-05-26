@@ -1,8 +1,7 @@
 import React from 'react';
-import Header from './Header';
 
 /**
- * A simple layout component that includes a header and wraps page content.
+ * A simple layout component that wraps page content.
  * @param {object} props - The component's props.
  * @param {React.ReactNode} props.children - The page content to be rendered.
  * @returns {JSX.Element} The Layout component.
@@ -10,7 +9,6 @@ import Header from './Header';
 export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
         {children}
       </main>

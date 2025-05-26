@@ -19,6 +19,14 @@ export default function Dashboard() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [chatOpen, setChatOpen] = useState(false);
+
+  // Minimal auth check: redirect to /login if not authenticated
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !user) {
+      console.log('[AUTH] No user found, redirecting to /login');
+      router.replace('/login');
+    }
+  }, [user, router]);
   const [stats, setStats] = useState({
     totalItems: 0,
     itemsScannedToday: 0,

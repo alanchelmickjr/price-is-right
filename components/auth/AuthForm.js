@@ -38,21 +38,41 @@ export default function AuthForm({ mode = 'login', onSuccess, onError, showOAuth
     setLoading(true);
     setError(null);
 
+    let timeoutId;
     try {
-      if (mode === 'register') {
-        if (formData.password !== formData.confirmPassword) {
-          throw new Error('Passwords do not match');
-        }
-        if (formData.password.length < 6) {
-          throw new Error('Password must be at least 6 characters');
-        }
-        
-        const result = await gunDataService.createUser(formData.email, formData.password);
-        if (onSuccess) onSuccess(result);
-      } else {
-        const result = await gunDataService.loginUser(formData.email, formData.password);
-        if (onSuccess) onSuccess(result);
-      }
+      // Timeout for Gun.js relay/network issues
+      await new Promise((resolve, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Network timeout: Gun relay not responding. Please check your connection or try again later.'));
+        }, 8000);
+
+        (async () => {
+          if (mode === 'register') {
+            if (formData.password !== formData.confirmPassword) {
+              clearTimeout(timeoutId);
+              reject(new Error('Passwords do not match'));
+              return;
+            }
+            if (formData.password.length < 6) {
+              clearTimeout(timeoutId);
+              reject(new Error('Password must be at least 6 characters'));
+              return;
+            }
+            const result = await gunDataService.createUser(formData.email, formData.password);
+            clearTimeout(timeoutId);
+            if (onSuccess) onSuccess(result);
+            resolve();
+          } else {
+            const result = await gunDataService.loginUser(formData.email, formData.password);
+            clearTimeout(timeoutId);
+            if (onSuccess) onSuccess(result);
+            resolve();
+          }
+        })().catch((err) => {
+          clearTimeout(timeoutId);
+          reject(err);
+        });
+      });
     } catch (err) {
       const errorMessage = err.message || 'Authentication failed';
       setError(errorMessage);

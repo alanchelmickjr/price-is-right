@@ -5,8 +5,18 @@ import { useRouter } from 'next/router';
  * Simply eBay About Page - Credits and Attribution
  * Celebrating the wild horses and the driver barely holding the reins! 🐎
  */
+import { useState, useEffect } from 'react';
 export default function About() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
 
   const teamMembers = [
     {

@@ -1,3 +1,10 @@
+# Kill any processes using critical ports before starting services
+for port in 8765 8080 3000; do
+  if lsof -ti :$port >/dev/null; then
+    echo "🔪 Killing process on port $port"
+    lsof -ti :$port | xargs kill -9
+  fi
+done
 #!/bin/bash
 
 # Simply eBay - Complete Startup Script
