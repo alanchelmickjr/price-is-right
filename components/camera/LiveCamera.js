@@ -1,18 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import gunDataService from '../../lib/gunDataService';
 import localVectorStore from '../../lib/localVectorStore';
+// Modularization: import new hooks for vector and Gun.js logic
+// import useVectorProcessing from '../../hooks/useVectorProcessing';
+// import useGunSync from '../../hooks/useGunSync';
 import ReticleOverlay from './ReticleOverlay';
 
 /**
  * LiveCamera component for real-time AI item recognition
  * Enhanced with Gun.js P2P sync and local vector storage
  */
-const LiveCamera = ({ 
-  onRecognitionResult, 
-  isProcessing = false, 
+const LiveCamera = ({
+  onRecognitionResult,
+  isProcessing = false,
   apiBaseUrl = 'http://localhost:8080',
   instruction = 'What do you see? Identify this item and suggest a price.',
-  interval = 500 
+  interval = 500,
+  deduplicationThreshold = 0.6 // Configurable deduplication threshold
 }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -98,6 +102,13 @@ const LiveCamera = ({
 
   const sendChatCompletionRequest = async (instruction, imageBase64URL) => {
     try {
+      // Input validation for instruction and imageBase64URL
+      if (typeof instruction !== 'string' || instruction.length > 500) {
+        throw new Error('Invalid instruction input');
+      }
+      if (typeof imageBase64URL !== 'string' || !imageBase64URL.startsWith('data:image/')) {
+        throw new Error('Invalid image data');
+      }
       // For llamafile with LLaVA, we need to use the completion endpoint with image data
       const imageData = imageBase64URL.split(',')[1]; // Remove data:image/jpeg;base64, prefix
       
@@ -169,20 +180,80 @@ const LiveCamera = ({
     };
   };
 
+  // Handles vector embedding and similarity search for a detected item
+  const handleVectorProcessing = useCallback((detectedItem, imageBase64URL) => {
+    try {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const imageElement = new Image();
+        imageElement.onload = async () => {
+          try {
+            // Generate image embedding
+            const embedding = await localVectorStore.generateImageEmbedding(imageElement);
+            // Store the vector with metadata
+            localVectorStore.storeVector(detectedItem.id.toString(), embedding, {
+              itemName: detectedItem.name,
+              category: detectedItem.category,
+              price: detectedItem.estimatedPrice,
+              condition: detectedItem.condition,
+              confidence: detectedItem.confidence
+            });
+            // Find similar items
+            const similar = localVectorStore.findSimilar(embedding, 3, 0.6);
+            setSimilarItems(similar);
+            // Auto-save vectors
+            localVectorStore.saveToStorage();
+          } catch (vectorError) {
+            console.warn('Vector processing failed:', vectorError);
+          }
+        };
+        imageElement.src = imageBase64URL;
+      }
+    } catch (vectorError) {
+      console.warn('Vector embedding failed:', vectorError);
+    }
+  }, []);
+
+  // Handles Gun.js sync for a detected item and AI response
+  const handleGunSync = useCallback((detectedItem, aiResponse, imageBase64URL) => {
+    try {
+      if (gunDataService.getCurrentUser()) {
+        // Create item in Gun.js
+        const gunItem = gunDataService.createItem({
+          name: detectedItem.name,
+          category: detectedItem.category,
+          condition: detectedItem.condition,
+          price: detectedItem.estimatedPrice,
+          description: detectedItem.description,
+          confidence: detectedItem.confidence,
+          images: [imageBase64URL],
+          status: 'recognized'
+        });
+        // Store recognition data
+        gunDataService.storeRecognition(gunItem.id, {
+          ai_response: aiResponse,
+          confidence: detectedItem.confidence,
+          image_data: imageBase64URL
+        });
+        console.log('Item synced to Gun.js:', gunItem.id);
+      }
+    } catch (gunError) {
+      console.warn('Gun.js sync failed:', gunError);
+    }
+  }, []);
+
+  // Orchestrates the frame processing pipeline
   const processFrame = useCallback(async () => {
     if (!isActive) return;
-
     const imageBase64URL = captureImage();
     if (!imageBase64URL) {
       setError('Failed to capture image. Stream might not be active.');
       return;
     }
-
     try {
       const aiResponse = await sendChatCompletionRequest(instruction, imageBase64URL);
       setLastResponse(typeof aiResponse === 'string' ? aiResponse : aiResponse.description);
       setError('');
-      
       // Create detected item object
       const detectedItem = {
         id: Date.now(),
@@ -192,77 +263,25 @@ const LiveCamera = ({
         category: aiResponse.category || 'Other',
         condition: aiResponse.condition || 'good',
         description: aiResponse.description || '',
-        x: 50 + Math.random() * 30, // Random position for reticle overlay
+        x: 50 + Math.random() * 30,
         y: 40 + Math.random() * 20,
         imageData: imageBase64URL,
         timestamp: Date.now()
       };
-      
-      // Generate vector embedding for similarity search
-      try {
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const imageElement = new Image();
-          imageElement.onload = async () => {
-            try {
-              // Generate image embedding
-              const embedding = await localVectorStore.generateImageEmbedding(imageElement);
-              
-              // Store the vector with metadata
-              localVectorStore.storeVector(detectedItem.id.toString(), embedding, {
-                itemName: detectedItem.name,
-                category: detectedItem.category,
-                price: detectedItem.estimatedPrice,
-                condition: detectedItem.condition,
-                confidence: detectedItem.confidence
-              });
-              
-              // Find similar items
-              const similar = localVectorStore.findSimilar(embedding, 3, 0.6);
-              setSimilarItems(similar);
-              
-              // Auto-save vectors
-              localVectorStore.saveToStorage();
-            } catch (vectorError) {
-              console.warn('Vector processing failed:', vectorError);
-            }
-          };
-          imageElement.src = imageBase64URL;
+      handleVectorProcessing(detectedItem, imageBase64URL);
+      handleGunSync(detectedItem, aiResponse, imageBase64URL);
+        // Deduplicate by vector similarity: only add if not similar to existing items
+        let isDuplicate = false;
+        if (similarItems && Array.isArray(similarItems) && similarItems.length > 0) {
+          // If any similar item has a similarity above threshold, treat as duplicate
+          // Assume similarItems[i] has a 'similarity' property (0-1), and 'id' or 'itemName'
+          isDuplicate = similarItems.some(sim => sim.similarity >= deduplicationThreshold);
         }
-      } catch (vectorError) {
-        console.warn('Vector embedding failed:', vectorError);
-      }
-      
-      // Store recognition data in Gun.js for P2P sync
-      try {
-        if (gunDataService.getCurrentUser()) {
-          // Create item in Gun.js
-          const gunItem = gunDataService.createItem({
-            name: detectedItem.name,
-            category: detectedItem.category,
-            condition: detectedItem.condition,
-            price: detectedItem.estimatedPrice,
-            description: detectedItem.description,
-            confidence: detectedItem.confidence,
-            images: [imageBase64URL],
-            status: 'recognized'
-          });
-          
-          // Store recognition data
-          gunDataService.storeRecognition(gunItem.id, {
-            ai_response: aiResponse,
-            confidence: detectedItem.confidence,
-            image_data: imageBase64URL
-          });
-          
-          console.log('Item synced to Gun.js:', gunItem.id);
+        if (!isDuplicate) {
+          setDetectedItems(prev => Array.isArray(prev) ? [...prev, detectedItem] : [detectedItem]);
+        } else {
+          setLastResponse('Duplicate item detected (vector similarity). Not added.');
         }
-      } catch (gunError) {
-        console.warn('Gun.js sync failed:', gunError);
-      }
-      
-      setDetectedItems([detectedItem]);
-      
       if (onRecognitionResult) {
         onRecognitionResult({
           itemName: detectedItem.name,
@@ -282,7 +301,7 @@ const LiveCamera = ({
       setError(error.message);
       setDetectedItems([]);
     }
-  }, [isActive, instruction, captureImage, onRecognitionResult, apiBaseUrl, similarItems]);
+  }, [isActive, instruction, captureImage, onRecognitionResult, apiBaseUrl, similarItems, handleVectorProcessing, handleGunSync]);
 
   const handleStart = () => {
     if (!cameraReady) {
@@ -407,5 +426,6 @@ const LiveCamera = ({
     </div>
   );
 };
+
 
 export default LiveCamera;

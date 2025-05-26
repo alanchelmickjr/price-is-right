@@ -1,4 +1,6 @@
-import { supabase } from '../../lib/supabaseClient';
+/**
+ * @file API endpoint for items. Supabase logic removed.
+ */
 
 const VALID_STATUSES = ["new", "inventory", "listed_on_ebay", "sold", "kept", "archived"];
 
@@ -96,101 +98,9 @@ const VALID_STATUSES = ["new", "inventory", "listed_on_ebay", "sold", "kept", "a
  *       500:
  *         description: Internal server error.
  */
-export default async function handler(req, res) {
-  const { user } = await supabase.auth.api.getUserByCookie(req);
-
-  if (!user) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  if (req.method === 'POST') {
-    // Create a new item
-    const { itemName, description, status } = req.body;
-
-    if (!itemName) {
-      return res.status(400).json({ error: 'itemName is required' });
-    }
-
-    const itemStatus = status || 'new';
-    if (status && !VALID_STATUSES.includes(status)) {
-      return res.status(400).json({ error: `Invalid status value. Must be one of: ${VALID_STATUSES.join(', ')}` });
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('items')
-        .insert([{
-          user_id: user.id,
-          item_name: itemName,
-          description: description || null,
-          status: itemStatus,
-          // ai_recognized_item, suggested_price_range_min, suggested_price_range_max will be null/default
-        }])
-        .select()
-        .single(); // Expecting a single record back after insert
-
-      if (error) {
-        console.error('Supabase error creating item:', error);
-        return res.status(500).json({ error: 'Failed to create item', details: error.message });
-      }
-
-      return res.status(201).json(data);
-    } catch (error) {
-      console.error('Error creating item:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-
-  } else if (req.method === 'GET') {
-    // Get user's inventory items
-    const page = parseInt(req.query.page, 10) || 1;
-    let limit = parseInt(req.query.limit, 10) || 20;
-    if (limit > 100) limit = 100; // Max limit
-    const offset = (page - 1) * limit;
-    const statusFilter = req.query.status;
-
-    if (statusFilter && !VALID_STATUSES.includes(statusFilter)) {
-      return res.status(400).json({ error: `Invalid status filter value. Must be one of: ${VALID_STATUSES.join(', ')}` });
-    }
-
-    try {
-      let query = supabase
-        .from('items')
-        .select('*', { count: 'exact' }) // Request count for pagination
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .range(offset, offset + limit - 1);
-
-      if (statusFilter) {
-        query = query.eq('status', statusFilter);
-      }
-
-      const { data: items, error, count } = await query;
-
-      if (error) {
-        console.error('Supabase error fetching items:', error);
-        return res.status(500).json({ error: 'Failed to fetch items', details: error.message });
-      }
-
-      const totalPages = Math.ceil(count / limit);
-
-      return res.status(200).json({
-        items,
-        pagination: {
-          currentPage: page,
-          itemsPerPage: limit,
-          totalItems: count,
-          totalPages,
-        },
-      });
-    } catch (error) {
-      console.error('Error fetching items:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-
-  } else {
-    res.setHeader('Allow', ['POST', 'GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+export default function handler(req, res) {
+  // Supabase logic removed. Endpoint not implemented.
+  res.status(501).json({ error: "Not implemented. Supabase logic removed from this endpoint." });
 }
 
 /**
