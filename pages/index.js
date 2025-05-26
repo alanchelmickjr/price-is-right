@@ -1,25 +1,18 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 /**
- * Index page - Redirect to splash
+ * Index page - Immediately redirects to splash (client-side only)
  */
 export default function IndexPage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    // Immediate redirect to splash
     router.replace('/splash');
   }, [router]);
 
-  // Return null during SSR and before mounting to prevent hydration mismatch
-  if (!mounted) {
-    return null;
-  }
-
+  // Prevent SSR/hydration mismatch: render nothing
   return null;
 }
 
@@ -27,3 +20,4 @@ export default function IndexPage() {
 IndexPage.getLayout = function getLayout(page) {
   return page;
 };
+

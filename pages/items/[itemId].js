@@ -1,3 +1,5 @@
+console.log('[DEBUG] pages/items/[itemId].js loaded');
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';

@@ -10,7 +10,7 @@ export default function About() {
 
   const teamMembers = [
     {
-      name: "Claude Sonnet 3.5",
+      name: "Claude Sonnet 4",
       role: "Lead AI Architect & Wild Horse",
       contribution: "Core system design, P2P architecture, neumorphic UI, and endless patience with debugging sessions",
       emoji: "🤖",
@@ -18,7 +18,7 @@ export default function About() {
       badge: "AI Powerhouse"
     },
     {
-      name: "GitHub Copilot",
+      name: "GitHub Copilot Free",
       role: "Unbiased Gentle Sage",
       contribution: "Code completion, patient guidance, and gracefully handling unabashed performance critiques",
       emoji: "🧠",
