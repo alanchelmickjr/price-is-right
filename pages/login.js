@@ -112,11 +112,6 @@ export default function LoginPage() {
         {/* Footer with status indicators */}
         <StatusIndicators />
       </div>
-      {/* Footer with legal links */}
-      <footer className="w-full flex justify-center gap-8 py-4 absolute bottom-0 left-0 right-0 z-20">
-        <a href="/terms" className="text-xs text-gray-400 no-underline font-medium hover:text-primary transition-colors">Terms of Service</a>
-        <a href="/privacy" className="text-xs text-gray-400 no-underline font-medium hover:text-primary transition-colors">Privacy Policy</a>
-      </footer>
     </>
   );
 }

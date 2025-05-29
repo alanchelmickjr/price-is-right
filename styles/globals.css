@@ -654,6 +654,35 @@ body {
   font-weight: 500;
 }
 
+/* Error and Success States */
+.error-message {
+  background: linear-gradient(135deg, var(--neu-bg-secondary), var(--neu-bg-primary));
+  border: 1px solid #ef4444;
+  border-radius: var(--neu-border-radius-sm);
+  color: #dc2626;
+  font-size: 0.875rem;
+  padding: 12px 16px;
+  margin-top: 8px;
+  box-shadow: 
+    inset 2px 2px 5px rgba(239, 68, 68, 0.1),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-smooth);
+}
+
+.success-message {
+  background: linear-gradient(135deg, var(--neu-bg-secondary), var(--neu-bg-primary));
+  border: 1px solid #10b981;
+  border-radius: var(--neu-border-radius-sm);
+  color: #059669;
+  font-size: 0.875rem;
+  padding: 12px 16px;
+  margin-top: 8px;
+  box-shadow: 
+    inset 2px 2px 5px rgba(16, 185, 129, 0.1),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-smooth);
+}
+
 /* Enhanced Mobile Optimization */
 @media (max-width: 480px) {
   .neumorphic-card {

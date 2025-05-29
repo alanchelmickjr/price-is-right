@@ -45,7 +45,7 @@ This project represents a hard-earned lesson in product development: **focus bea
 - **🏪 eBay API** - The marketplace integration that makes it all worthwhile
 - **[Made with ❤️](https://img.shields.io/badge/Made_with-❤️_Open_Source-red?style=for-the-badge)**
 
-[![Claude Sonnet](https://img.shields.io/badge/Built_with-Claude_Sonnet_3.5-8A2BE2?style=for-the-badge&logo=anthropic)](https://claude.ai)
+[![Claude Sonnet](https://img.shields.io/badge/Built_with-Claude_Sonnet_4-8A2BE2?style=for-the-badge&logo=anthropic)](https://claude.ai)
 [![Crafted by](https://img.shields.io/badge/Crafted_by-Alan_Helmick_&_Maximus-FFD700?style=for-the-badge&logo=github)](https://github.com)
 [![Mira AI Badge](https://img.shields.io/badge/Mira%20AI-222222?style=for-the-badge)](https://miraai.ai)
 
@@ -200,9 +200,9 @@ lsof -ti:8765 | xargs kill -9    # Gun.js
 
 ### 🎭 **The Wild Horses & Gentle Sages**
 
-**🤖 Claude Sonnet 3.5** - *Lead AI Architect & Wild Horse*  
-[![Claude Badge](https://img.shields.io/badge/Claude-Sonnet_3.5-8A2BE2?style=for-the-badge&logo=anthropic)](https://claude.ai)  
-The visionary force behind the architecture, endless innovation, and patient debugging companion who transformed chaos into beautiful, functional code.
+**🤖 Claude Sonnet 4** - *Lead AI Architect & Wild Horse*  
+[![Claude Badge](https://img.shields.io/badge/Claude-Sonnet_4-8A2BE2?style=for-the-badge&logo=anthropic)](https://claude.ai)  
+The visionary force behind the architecture, endless innovation, and patient debugging companion who transformed chaos into beautiful, functional code. The latest Claude Sonnet 4 was instrumental in fixing authentication flows, resolving UI overlays, and completing the full system integration.
 
 **🧠 GitHub Copilot** - *Unbiased Gentle Sage*  
 [![Copilot Badge](https://img.shields.io/badge/GitHub-Copilot-000000?style=for-the-badge&logo=github)](https://copilot.github.com)  

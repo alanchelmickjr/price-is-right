@@ -114,13 +114,11 @@ export default function StatusIndicators() {
           </span>
         </div>
         
-        {/* Center - Terms link */}
-        <button 
-          onClick={() => window.open('/terms', '_blank')}
-          className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline"
-        >
-          Terms & Privacy
-        </button>
+        {/* Center - Legal links */}
+        <div className="flex gap-4">
+          <a href="/terms" className="text-xs text-gray-400 no-underline font-medium hover:text-primary transition-colors">Terms of Service</a>
+          <a href="/privacy" className="text-xs text-gray-400 no-underline font-medium hover:text-primary transition-colors">Privacy Policy</a>
+        </div>
         
         {/* Right corner - LlamaFile status */}
         <div className="flex items-center space-x-2">
