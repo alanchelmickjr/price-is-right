@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import gunDataService from '../../lib/gunDataService';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * Unified authentication form component for both login and registration using Gun.js
@@ -22,59 +22,49 @@ export default function AuthForm({ mode = 'login', onSuccess, onError, showOAuth
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const { login, register } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    console.log('[AuthForm] handleInputChange', { name, value });
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      console.log('[AuthForm] formData after change', updated);
+      return updated;
+    });
     // Clear error when user starts typing
     if (error) setError(null);
   };
 
   const handleSubmit = async (e) => {
+    console.log('[AuthForm] handleSubmit called', { event: e, formData, mode });
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    let timeoutId;
     try {
-      // Timeout for Gun.js relay/network issues
-      await new Promise((resolve, reject) => {
-        timeoutId = setTimeout(() => {
-          reject(new Error('Network timeout: Gun relay not responding. Please check your connection or try again later.'));
-        }, 8000);
-
-        (async () => {
-          if (mode === 'register') {
-            if (formData.password !== formData.confirmPassword) {
-              clearTimeout(timeoutId);
-              reject(new Error('Passwords do not match'));
-              return;
-            }
-            if (formData.password.length < 6) {
-              clearTimeout(timeoutId);
-              reject(new Error('Password must be at least 6 characters'));
-              return;
-            }
-            const result = await gunDataService.createUser(formData.email, formData.password);
-            clearTimeout(timeoutId);
-            if (onSuccess) onSuccess(result);
-            resolve();
-          } else {
-            const result = await gunDataService.loginUser(formData.email, formData.password);
-            clearTimeout(timeoutId);
-            if (onSuccess) onSuccess(result);
-            resolve();
-          }
-        })().catch((err) => {
-          clearTimeout(timeoutId);
-          reject(err);
-        });
-      });
+      if (mode === 'register') {
+        if (formData.password !== formData.confirmPassword) {
+          console.log('[AuthForm] Passwords do not match', { formData });
+          throw new Error('Passwords do not match');
+        }
+        if (formData.password.length < 6) {
+          console.log('[AuthForm] Password too short', { formData });
+          throw new Error('Password must be at least 6 characters');
+        }
+        console.log('[AuthForm] Calling register', { email: formData.email });
+        const result = await register(formData.email, formData.password, formData.confirmPassword);
+        console.log('[AuthForm] Registration success', { result });
+        if (onSuccess) onSuccess(result);
+      } else {
+        console.log('[AuthForm] Calling login', { email: formData.email });
+        const result = await login(formData.email, formData.password);
+        console.log('[AuthForm] Login success', { result });
+        if (onSuccess) onSuccess(result);
+      }
     } catch (err) {
       const errorMessage = err.message || 'Authentication failed';
+      console.log('[AuthForm] Caught error', errorMessage, err);
       setError(errorMessage);
       if (onError) onError(errorMessage);
     } finally {
@@ -186,7 +176,10 @@ export default function AuthForm({ mode = 'login', onSuccess, onError, showOAuth
             <button
               type="button"
               className="absolute inset-y-0 right-0 pr-4 flex items-center"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => {
+                console.log('[AuthForm] Show password toggled', !showPassword);
+                setShowPassword(!showPassword);
+              }}
             >
               {showPassword ? (
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,6 +225,7 @@ export default function AuthForm({ mode = 'login', onSuccess, onError, showOAuth
           type="submit"
           disabled={loading}
           className="neumorphic-button-primary w-full py-4 px-6 flex justify-center items-center disabled:opacity-50"
+          onClick={e => { console.log('[AuthForm] Submit button clicked', e); }}
         >
           {loading ? (
             <div className="flex items-center">

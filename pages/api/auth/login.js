@@ -1,8 +1,4 @@
-import Gun from 'gun';
-import 'gun/sea';
-
-// Initialize Gun.js with SEA for authentication
-const gun = Gun(['http://localhost:8765']);
+import gunDataService from '../../../lib/gunDataService';
 
 /**
  * @swagger

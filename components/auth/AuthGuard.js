@@ -16,7 +16,17 @@ export default function AuthGuard({ children, fallback = null }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    const willRedirect = !loading && !isAuthenticated;
+    // Detailed log includes user object for diagnostics
+    console.log('[AuthGuard] useEffect:', {
+      loading,
+      isAuthenticated,
+      user,
+      pathname: router.pathname,
+      willRedirect
+    });
+
+    if (willRedirect) {
       // Store the attempted path to redirect back after login
       // Avoid storing if the current path is already an auth page
       if (!router.pathname.startsWith('/auth')) {
@@ -24,18 +34,21 @@ export default function AuthGuard({ children, fallback = null }) {
       }
       router.push('/auth/login');
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, router, user]);
 
   if (loading) {
+    console.log('[AuthGuard] Render: loading', { loading, isAuthenticated, user, pathname: router.pathname });
     return fallback || <div className="flex justify-center items-center min-h-screen">Loading authentication...</div>;
   }
 
   if (!isAuthenticated) {
     // Should be redirecting, but return null to prevent flash of content
-    return null; 
+    console.log('[AuthGuard] Render: redirecting', { loading, isAuthenticated, user, pathname: router.pathname });
+    return null;
   }
 
   // If authenticated, render the children components
+  console.log('[AuthGuard] Render: children', { loading, isAuthenticated, user, pathname: router.pathname });
   return <>{children}</>;
 }
 

@@ -1,8 +1,4 @@
-import Gun from 'gun';
-import 'gun/sea';
-
-// Initialize Gun.js with SEA for authentication
-const gun = Gun(['http://localhost:8765']);
+import gunDataService from '../../../lib/gunDataService';
 
 /**
  * @swagger
@@ -110,70 +106,19 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Passwords do not match' });
   }
 
-  // Validate password length (Gun.js requires at least 8 characters)
-  if (password.length < 8) {
+  // Validate password length (Gun.js requires at least 6 characters)
+  if (password.length < 6) {
     return res.status(400).json({ 
-      error: 'Password must be at least 8 characters long',
+      error: 'Password must be at least 6 characters long',
       code: 'PASSWORD_TOO_SHORT',
-      suggestion: 'Please choose a stronger password with at least 8 characters'
+      suggestion: 'Please choose a stronger password with at least 6 characters'
     });
   }
 
   try {
-    // Create user reference in Gun.js
-    const user = gun.user();
-    
-    // Attempt to create account with Gun.js SEA with timeout
-    const createPromise = new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Registration timeout - please try again'));
-      }, 10000); // 10 second timeout
-
-      user.create(email, password, (ack) => {
-        clearTimeout(timeout);
-        if (ack.err) {
-          console.error('Gun.js create error:', ack.err);
-          reject(new Error(ack.err));
-        } else {
-          resolve(ack);
-        }
-      });
-    });
-
-    const createResult = await createPromise;
-
-    // Auto-login after successful registration
-    const authPromise = new Promise((resolve, reject) => {
-      user.auth(email, password, (ack) => {
-        if (ack.err) {
-          reject(new Error(ack.err));
-        } else {
-          resolve(ack);
-        }
-      });
-    });
-
-    const authResult = await authPromise;
-    
-    // Create session-like object for compatibility
-    const registrationData = {
-      user: {
-        id: user.is?.pub || 'anonymous',
-        email: email,
-        authenticated: true,
-        provider: 'gun-p2p',
-        created_at: new Date().toISOString()
-      },
-      session: {
-        access_token: user.is?.pub || 'gun-session',
-        token_type: 'p2p',
-        expires_at: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-        provider: 'gun'
-      },
-      message: 'Registration successful and logged in'
-    };
-
-    return res.status(201).json(registrationData);
+    // Delegate Gun.js user creation to service layer
+    const sessionData = await gunDataService.createUserWithSession(email, password);
+    return res.status(201).json(sessionData);
 
   } catch (err) {
     console.error('Gun.js registration error:', err.message);
