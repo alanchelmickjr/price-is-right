@@ -34,7 +34,12 @@ export default function ForgotPassword() {
       });
 
       if (result.success) {
-        setMessage(`Reset instructions sent to ${email}. Check your email (and spam folder).`);
+        if (result.demo) {
+          setMessage(`🎭 DEMO MODE: Reset email simulated for ${email}. In production, you would receive an email with reset instructions.`);
+          console.log('🔗 Reset URL that would be sent:', `${window.location.origin}/reset-password?token=${resetToken}`);
+        } else {
+          setMessage(`Reset instructions sent to ${email}. Check your email (and spam folder).`);
+        }
         // In a real app, you'd call your API to store the reset token
         console.log('Password reset requested for:', email, 'Token:', resetToken);
       } else {
