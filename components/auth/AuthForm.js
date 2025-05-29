@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 
 /**
@@ -42,29 +43,46 @@ export default function AuthForm({ mode = 'login', onSuccess, onError, showOAuth
     setLoading(true);
     setError(null);
 
+    // Client-side validation first
+    if (mode === 'register') {
+      if (formData.password !== formData.confirmPassword) {
+        console.log('[AuthForm] Passwords do not match', { formData });
+        setError('Passwords do not match');
+        setLoading(false);
+        return;
+      }
+      if (formData.password.length < 6) {
+        console.log('[AuthForm] Password too short', { formData });
+        setError('Password must be at least 6 characters');
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
+      let result;
       if (mode === 'register') {
-        if (formData.password !== formData.confirmPassword) {
-          console.log('[AuthForm] Passwords do not match', { formData });
-          throw new Error('Passwords do not match');
-        }
-        if (formData.password.length < 6) {
-          console.log('[AuthForm] Password too short', { formData });
-          throw new Error('Password must be at least 6 characters');
-        }
         console.log('[AuthForm] Calling register', { email: formData.email });
-        const result = await register(formData.email, formData.password, formData.confirmPassword);
-        console.log('[AuthForm] Registration success', { result });
-        if (onSuccess) onSuccess(result);
+        result = await register(formData.email, formData.password, formData.confirmPassword);
       } else {
         console.log('[AuthForm] Calling login', { email: formData.email });
-        const result = await login(formData.email, formData.password);
-        console.log('[AuthForm] Login success', { result });
+        result = await login(formData.email, formData.password);
+      }
+      
+      console.log('[AuthForm] Auth result', { result });
+      
+      if (result.success) {
+        console.log('[AuthForm] Auth successful');
         if (onSuccess) onSuccess(result);
+      } else {
+        console.log('[AuthForm] Auth failed', result.error);
+        setError(result.error);
+        if (onError) onError(result.error);
       }
     } catch (err) {
+      // This should only catch network errors now
       const errorMessage = err.message || 'Authentication failed';
-      console.log('[AuthForm] Caught error', errorMessage, err);
+      console.log('[AuthForm] Caught unexpected error', errorMessage, err);
       setError(errorMessage);
       if (onError) onError(errorMessage);
     } finally {
@@ -218,6 +236,15 @@ export default function AuthForm({ mode = 'login', onSuccess, onError, showOAuth
         {error && (
           <div className="error-message">
             {error}
+          </div>
+        )}
+
+        {/* Forgot Password Link for Login Mode */}
+        {!isRegistering && (
+          <div className="text-center mb-4">
+            <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+              Forgot your password?
+            </Link>
           </div>
         )}
 

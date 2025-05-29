@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
       if (!response.ok) {
         const errorMessage = data.suggestion || data.error || 'Registration failed';
         setError(errorMessage);
-        throw new Error(errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       setUser(data.user);
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Registration error:", e);
       const errorMessage = e.message || 'Registration failed. Please try again.';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       if (!response.ok) {
         const errorMessage = data.suggestion || data.error || 'Login failed';
         setError(errorMessage);
-        throw new Error(errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       setUser(data.user);
@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Login error:", e);
       const errorMessage = e.message || 'Login failed. Please try again.';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }

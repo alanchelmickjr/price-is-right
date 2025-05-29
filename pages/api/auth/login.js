@@ -83,9 +83,35 @@ export default async function handler(req, res) {
 
   const { email, password } = req.body;
 
-  // Validate required fields
+  // Enhanced validation 
   if (!email || !password) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ 
+      error: 'Missing required fields',
+      code: 'MISSING_FIELDS',
+      details: {
+        email: !email ? 'Email is required' : null,
+        password: !password ? 'Password is required' : null
+      }
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (typeof email !== 'string' || !emailRegex.test(email.trim())) {
+    return res.status(400).json({ 
+      error: 'Invalid email format',
+      code: 'INVALID_EMAIL_FORMAT',
+      suggestion: 'Please enter a valid email address'
+    });
+  }
+
+  // Validate password
+  if (typeof password !== 'string' || password.length === 0) {
+    return res.status(400).json({ 
+      error: 'Invalid password',
+      code: 'INVALID_PASSWORD',
+      suggestion: 'Password cannot be empty'
+    });
   }
 
   try {

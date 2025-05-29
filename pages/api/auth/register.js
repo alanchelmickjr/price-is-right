@@ -4,7 +4,17 @@ import gunDataService from '../../../lib/gunDataService';
  * @swagger
  * /api/auth/register:
  *   post:
- *     summary: Register a new user
+ *     summary:  // Validate password confirmation
+  if (password !== confirmPassword) {
+    return res.status(400).json({ 
+      error: 'Passwords do not match',
+      code: 'PASSWORD_MISMATCH',
+      suggestion: 'Please make sure both password fields match'
+    });
+  }
+
+  // Validate password length
+  if (password.length < 6) {er
  *     description: Creates a new user account using Gun.js P2P authentication with email and password.
  *     tags:
  *       - Authentication
@@ -90,28 +100,44 @@ export default async function handler(req, res) {
 
   const { email, password, confirmPassword } = req.body;
 
-  // Validate required fields
+  // Enhanced validation 
   if (!email || !password || !confirmPassword) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ 
+      error: 'Missing required fields',
+      code: 'MISSING_FIELDS',
+      details: {
+        email: !email ? 'Email is required' : null,
+        password: !password ? 'Password is required' : null,
+        confirmPassword: !confirmPassword ? 'Password confirmation is required' : null
+      }
+    });
   }
 
   // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: 'Invalid email format' });
-  }
-
-  // Validate password match
-  if (password !== confirmPassword) {
-    return res.status(400).json({ error: 'Passwords do not match' });
-  }
-
-  // Validate password length (Gun.js requires at least 6 characters)
-  if (password.length < 6) {
+  if (typeof email !== 'string' || !emailRegex.test(email.trim())) {
     return res.status(400).json({ 
-      error: 'Password must be at least 6 characters long',
-      code: 'PASSWORD_TOO_SHORT',
-      suggestion: 'Please choose a stronger password with at least 6 characters'
+      error: 'Invalid email format',
+      code: 'INVALID_EMAIL_FORMAT',
+      suggestion: 'Please enter a valid email address'
+    });
+  }
+
+  // Validate password strength
+  if (typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ 
+      error: 'Password must be at least 6 characters',
+      code: 'WEAK_PASSWORD',
+      suggestion: 'Choose a stronger password with at least 6 characters'
+    });
+  }
+
+  // Validate password confirmation
+  if (password !== confirmPassword) {
+    return res.status(400).json({ 
+      error: 'Passwords do not match',
+      code: 'PASSWORD_MISMATCH',
+      suggestion: 'Please make sure both password fields match'
     });
   }
 
