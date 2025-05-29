@@ -1,4 +1,5 @@
 import gunDataService from '../../../lib/gunDataService';
+import serverEmailService from '../../../lib/serverEmailService';
 
 /**
  * @swagger
@@ -142,9 +143,69 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Check if email verification is required
+    const emailVerificationRequired = process.env.NEXT_PUBLIC_EMAIL_VERIFICATION_REQUIRED === 'true';
+    
     // Delegate Gun.js user creation to service layer
     const sessionData = await gunDataService.createUserWithSession(email, password);
-    return res.status(201).json(sessionData);
+    
+    // If email verification is required, generate token and send verification email
+    if (emailVerificationRequired) {
+      try {
+        // Generate verification token
+        const verificationToken = serverEmailService.generateVerificationToken();
+        
+        // Store verification token in Gun.js
+        await gunDataService.storeEmailVerificationToken(email, verificationToken);
+        
+        // Send verification email
+        const emailResult = await serverEmailService.sendEmailVerification(
+          email, 
+          verificationToken,
+          { name: sessionData.user.email.split('@')[0] }
+        );
+        
+        if (emailResult.success) {
+          return res.status(201).json({
+            ...sessionData,
+            emailVerificationRequired: true,
+            emailVerificationSent: true,
+            message: 'Account created successfully. Please check your email to verify your account.',
+            verificationInstructions: emailResult.instructions || 'Check your email for verification link',
+            fallbackMode: emailResult.fallback || false
+          });
+        } else {
+          // Registration succeeded but email failed - still return success
+          console.warn('Email verification failed to send:', emailResult.error);
+          return res.status(201).json({
+            ...sessionData,
+            emailVerificationRequired: true,
+            emailVerificationSent: false,
+            message: 'Account created successfully. Email verification could not be sent - please contact support.',
+            warning: 'Verification email delivery failed'
+          });
+        }
+      } catch (verificationError) {
+        console.error('Email verification setup error:', verificationError);
+        console.error('Error details:', verificationError.message, verificationError.stack);
+        // Registration succeeded but verification setup failed
+        return res.status(201).json({
+          ...sessionData,
+          emailVerificationRequired: true,
+          emailVerificationSent: false,
+          message: 'Account created successfully. Email verification setup failed - please contact support.',
+          warning: 'Verification system error',
+          debugError: verificationError.message
+        });
+      }
+    } else {
+      // No email verification required
+      return res.status(201).json({
+        ...sessionData,
+        emailVerificationRequired: false,
+        message: 'Account created successfully!'
+      });
+    }
 
   } catch (err) {
     console.error('Gun.js registration error:', err.message);
