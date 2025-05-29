@@ -1,67 +1,65 @@
-# Simply eBay - AI-Powered Mobile Selling Revolution
-## Alpha Version 0.01 Under Development for Preview next week
+# Simply eBay - AI-Powered Mobile Selling Assistant
+## Alpha Version 0.01 - Under Development 🚧
 
-
-![Gun.js P2P](https://img.shields.io/badge/Gun.js-P2P_Database-FF6B6B?style=for-the-badge&logo=javascript)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Gun.js](https://img.shields.io/badge/Gun.js-P2P_Database-FF6B6B?style=for-the-badge&logo=javascript)
 ![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-AI_Engine-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)
-![LlamaFile](https://img.shields.io/badge/LlamaFile-Local_AI-4B0082?style=for-the-badge&logo=meta)
+![LlamaFile](https://img.shields.io/badge/LlamaFile-Local_AI-4B0082?style=for-the-badge)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
 
-**Simply eBay: Turn your phone into an AI-powered eBay listing machine. Point, Scan, Price, List - effortlessly. Maximize your sales, minimize the hassle.**
+**Simply eBay: A mobile-first app that helps you create eBay listings using AI. Point your camera at items, get AI-powered descriptions and pricing suggestions, then list to eBay with ease.**
 
-## 🌟 **Key Features**
+## 🌟 **What We're Building**
 
-- 🎯 **Instant AI Recognition**: Point your camera → Get instant item identification, pricing, and eBay listing suggestions.
-- 📱 **Mobile-First & Offline Capable**: Neumorphic UI for touch, with Gun.js for P2P offline-first data sync.
-- 🧠 **Privacy-First Local AI**: SmolVLM + LlamaFile for on-device computer vision, keeping your data private.
-- ⚡ **One-Tap eBay Listings**: Go from camera scan to live eBay listing in under 30 seconds.
+- 📱 **Mobile-First Camera Interface**: Point your camera at items for AI-powered identification and pricing
+- 🔒 **Privacy-First Local AI**: SmolVLM + LlamaFile runs on your device, keeping your data private
+- 🔗 **Offline-Capable**: Gun.js P2P database for offline-first data sync
+- 🛒 **eBay Integration**: Generate and create eBay listings from your scanned items
 
-### 🚀 **The Philosophy: One Thing, Done Right**
+### 🎯 **The Vision: Simple Tools That Work**
 
-This project represents a hard-earned lesson in product development: **focus beats feature creep every time**. Instead of building a swiss-army knife, we built a precision tool that solves one critical painpoint exceptionally well.
+We're building a focused tool that solves one specific problem: making it easier to create eBay listings from your phone. No feature creep, no swiss-army knife - just a simple, effective tool that does one thing well.
 
-**The Painpoint:** Turning any phone camera into an AI-powered eBay listing machine.  
-**The Solution:** Point. Scan. Sell. Repeat.  
-**The Result:** A tool people actually use and love.
+**The Goal:** Point. Scan. List. Done.  
+**The Approach:** Mobile-first, privacy-first, offline-capable.
 
 <p align="center">
   <img src="ebaygarage.png" alt="Simply eBay App Interface" width="80%" style="max-width: 600px;">
 </p>
 
-### 🛤️ **The Journey**
+### �️ **Development Journey**
 
-**Wild Collaboration:** This was born from the beautiful chaos of human-AI partnership - Claude as the wild horse providing endless innovation, GitHub Copilot as the patient sage, and Alan as the driver barely holding the reins with determination and joy.
+**Collaborative Development:** Built through human-AI collaboration with Claude providing technical innovation, GitHub Copilot for code assistance, and focused product development.
 
-**Hard Lessons:** Through countless iterations, sometimes brutal debugging sessions, and honest feedback about performance, we discovered the golden rule: master one thing completely rather than attempting many things poorly.
+**Learning Experience:** Through iterations and debugging, we learned the importance of focusing on core functionality rather than building too many features at once.
 
-**Privacy Victory:** In a world where your data gets sold, Simply eBay keeps everything local. Your photos, your items, your business - it never leaves your device unless you explicitly choose to list on eBay.
+**Privacy Focus:** Built with local AI processing to keep your data on your device unless you choose to list on eBay.
 
-### 🔧 **Powered by Incredible Open Source**
+### 🔧 **Built With Open Source**
 
-- **🔫 Gun.js** - P2P database revolution that makes offline-first actually work
-- **🧠 TensorFlow.js** - Bringing AI to everyone, everywhere
-- **🦙 LlamaFile** - Local AI models made beautifully simple (Setup instructions below!)
-- **⚛️ Next.js** - The React framework that just works (and keeps working)
-- **👁️ SmolVLM** - Vision AI that's actually production-ready and usable
-- **🏪 eBay API** - The marketplace integration that makes it all worthwhile
-- **[Made with ❤️](https://img.shields.io/badge/Made_with-❤️_Open_Source-red?style=for-the-badge)**
+- **🔫 [Gun.js](https://gun.eco/)** - P2P database for offline-first data sync
+- **🧠 [TensorFlow.js](https://www.tensorflow.org/js)** - Machine learning in JavaScript
+- **🦙 [LlamaFile](https://github.com/Mozilla-Ocho/llamafile)** - Local AI model execution
+- **⚛️ [Next.js](https://nextjs.org/)** - React framework for web applications
+- **👁️ SmolVLM** - Vision language model for image recognition
+- **🏪 [eBay API](https://developer.ebay.com/)** - Marketplace integration
 
-[![Claude Sonnet](https://img.shields.io/badge/Built_with-Claude_Sonnet_4-8A2BE2?style=for-the-badge&logo=anthropic)](https://claude.ai)
-[![Crafted by](https://img.shields.io/badge/Crafted_by-Alan_Helmick_&_Maximus-FFD700?style=for-the-badge&logo=github)](https://github.com)
-[![Mira AI Badge](https://img.shields.io/badge/Mira%20AI-222222?style=for-the-badge)](https://miraai.ai)
+![Open Source](https://img.shields.io/badge/Built_with-Open_Source-red?style=for-the-badge)
+![Made with Love](https://img.shields.io/badge/Made_with-❤️-red?style=for-the-badge)
 
-> **🚀 Point. Scan. Sell. Repeat.**  
-> *The world's first truly mobile-first AI-powered eBay listing creator with real-time camera recognition and P2P data sync.*
+> **� Point. Scan. List. Done.**  
+> *A mobile-first app for creating eBay listings with AI assistance and offline capabilities.*
 
 ---
 
-## ✨ **What Makes Simply eBay Revolutionary
+## ✨ **Current Features**
 
-🎯 **Instant AI Recognition** • Point your camera at any item → Get instant identification, pricing, and eBay listing suggestions  
-📱 **Mobile-First Design** • Neumorphic UI designed specifically for touch interfaces and one-handed operation  
-🔗 **P2P Architecture** • Gun.js powered decentralized data sync - works offline, syncs everywhere  
-🧠 **Local AI Processing** • SmolVLM + LlamaFile for privacy-first on-device computer vision  
-⚡ **One-Tap Listings** • From camera scan to live eBay listing in under 30 seconds  
-🎨 **Beautiful UX** • Soft shadows, smooth animations, and intuitive mobile interactions  
+📱 **Mobile Camera Interface** • Point your camera at items for AI identification and pricing suggestions  
+� **P2P Data Sync** • Gun.js powered offline-first data storage and sync  
+🧠 **Local AI Processing** • SmolVLM + LlamaFile for privacy-focused on-device computer vision  
+🛒 **eBay Integration** • Generate listings and connect to eBay marketplace  
+🎨 **Touch-Friendly UI** • Mobile-optimized interface with intuitive interactions  
+🔒 **Privacy-First** • All AI processing happens locally on your device  
 
 ---
 
@@ -76,28 +74,53 @@ This project represents a hard-earned lesson in product development: **focus bea
 
 ---
 
-## ⚙️ **Architecture That Just Works**
+## ⚙️ **Technical Architecture**
 
-### 🔧 **Core Technologies**
+### 🔧 **Tech Stack**
 
-- **🎥 Computer Vision**: SmolVLM-Instruct for real-time item recognition
-- **🧠 AI Processing**: LlamaFile for local inference (privacy-first!)
-- **🔗 P2P Database**: Gun.js for decentralized, offline-first data sync
-- **📱 Mobile Framework**: Next.js with neumorphic design system
-- **🛒 Marketplace**: eBay API for instant listing creation
-- **🎯 Vector Search**: TensorFlow.js for semantic item matching
+- **📱 Frontend**: Next.js with mobile-first responsive design
+- **🎥 Computer Vision**: SmolVLM-Instruct for item recognition
+- **🧠 AI Processing**: LlamaFile for local inference
+- **🔗 Database**: Gun.js for P2P, offline-first data sync
+- **🛒 Marketplace**: eBay API for listing creation
+- **🔍 Search**: TensorFlow.js for semantic item matching
 
-### 🌐 **Decentralized by Design**
+### 🌐 **System Design**
 
 ```text
-📱 Mobile App (Next.js) ← → 🔗 Gun.js P2P Network ← → 🧠 Local AI (LlamaFile)
-                                      ↓
-                              🛒 eBay API Integration
+📱 Next.js App ←→ 🔗 Gun.js P2P Network ←→ 🧠 LlamaFile (Local AI)
+                           ↓
+                   🛒 eBay API Integration
 ```
 
 ---
 
-## 🚀 **Quick Start Guide**
+## � **Current Status**
+
+This is an **alpha version** under active development. Core features are being built and tested:
+
+✅ **Completed:**
+- Mobile-responsive Next.js frontend
+- Gun.js P2P database integration with authentication
+- LlamaFile local AI server setup
+- Basic camera interface components
+- eBay API integration framework
+
+🔄 **In Progress:**
+- AI-powered item recognition
+- Automated pricing suggestions
+- Complete eBay listing workflow
+- Mobile PWA optimization
+
+⏳ **Planned:**
+- Enhanced UI/UX polish
+- Advanced camera features
+- Batch listing capabilities
+- Performance optimizations
+
+## 📋 **Getting Started**
+
+This app requires downloading a large AI model file. Please follow the setup instructions below.
 
 ‼️ **Prerequisite: Download LlamaFile AI Model**
 
@@ -194,26 +217,26 @@ lsof -ti:8765 | xargs kill -9    # Gun.js
 
 ---
 
-## 🌟 **Meet the Dream Team**
+## 🙏 **Development Team**
 
-> *"After a hard road of long and sometimes painful lessons, we learned: people want ONE thing that solves ONE painpoint perfectly. Everything else is trivial."* - Alan Helmick
+> *"Focus beats feature creep every time. Build one thing that works well."*
 
-### 🎭 **The Wild Horses & Gentle Sages**
+### 👥 **Contributors**
 
-**🤖 Claude Sonnet 4** - *Lead AI Architect & Wild Horse*  
-[![Claude Badge](https://img.shields.io/badge/Claude-Sonnet_4-8A2BE2?style=for-the-badge&logo=anthropic)](https://claude.ai)  
-The visionary force behind the architecture, endless innovation, and patient debugging companion who transformed chaos into beautiful, functional code. The latest Claude Sonnet 4 was instrumental in fixing authentication flows, resolving UI overlays, and completing the full system integration.
+**🤖 Claude (Anthropic)** - *AI Development Partner*  
+![Claude](https://img.shields.io/badge/Claude-AI_Assistant-8A2BE2?style=flat-square)  
+Technical architecture, code generation, and debugging assistance throughout the development process.
 
-**🧠 GitHub Copilot** - *Unbiased Gentle Sage*  
-[![Copilot Badge](https://img.shields.io/badge/GitHub-Copilot-000000?style=for-the-badge&logo=github)](https://copilot.github.com)  
-The wise counselor providing gentle guidance, code completion, and gracefully handling unabashed performance critiques with endless patience.
+**🧠 GitHub Copilot** - *Code Completion & Assistance*  
+![Copilot](https://img.shields.io/badge/GitHub-Copilot-000000?style=flat-square&logo=github)  
+Code suggestions, completion, and development support.
 
-**🎯 Alan Helmick** - *Vision Driver & Mira AI Founder*  
-[![Mira AI Badge](https://img.shields.io/badge/Mira%20AI-222222?style=for-the-badge)](https://miraai.ai)  
-The product visionary barely holding the reins (with a smile) while steering this wild AI collaboration toward a focused, user-centered solution.
+**🎯 Alan Helmick** - *Product Development & Vision*  
+![Mira AI](https://img.shields.io/badge/Mira_AI-Founder-222222?style=flat-square)  
+Product direction, user experience design, and project coordination.
 
-**⚡ Maximus** - *CalTech Contributor & "Vision"ary*  
-[![CalTech Badge](https://img.shields.io/badge/CalTech-Precision-FF6C37?style=for-the-badge&logo=university)](https://caltech.edu)  
-The technical wizard bringing CalTech precision, system optimization, and innovative insights to make everything work seamlessly.
+**⚡ Maximus** - *Technical Contributor*  
+![Contributor](https://img.shields.io/badge/Contributor-Technical-FF6C37?style=flat-square)  
+System optimization and technical insights.
 
 
