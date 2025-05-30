@@ -15,7 +15,6 @@ const FreezeFrameOverlay = ({
 }) => {
   const [overlayDimensions, setOverlayDimensions] = useState({ width: 0, height: 0 });
   const [reticleAnimation, setReticleAnimation] = useState('fade-in');
-  const [error, setError] = useState('');
   const overlayRef = useRef(null);
 
   // Use our smart camera hook for freeze-frame functionality
@@ -92,21 +91,13 @@ const FreezeFrameOverlay = ({
     return 'LOW';
   };
 
-  if (error) {
+  if (!cameraReady) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-100 rounded-lg">
         <div className="text-center">
-          <div className="text-red-500 text-lg mb-2">📱</div>
-          <p className="text-red-600 text-sm">{error}</p>
-          <button 
-            onClick={() => {
-              setError('');
-              // Hook will re-initialize automatically
-            }}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
-          >
-            Retry Camera
-          </button>
+          <div className="text-gray-500 text-lg mb-2">📱</div>
+          <p className="text-gray-600 text-sm">Initializing camera...</p>
+          <div className="mt-2 w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
         </div>
       </div>
     );
