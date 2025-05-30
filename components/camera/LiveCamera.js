@@ -1,22 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import gunDataService from '../../lib/gunDataService';
 import localVectorStore from '../../lib/localVectorStore';
-// Modularization: import new hooks for vector and Gun.js logic
-// import useVectorProcessing from '../../hooks/useVectorProcessing';
-// import useGunSync from '../../hooks/useGunSync';
 import ReticleOverlay from './ReticleOverlay';
 
-/**
- * LiveCamera component for real-time AI item recognition
- * Enhanced with Gun.js P2P sync and local vector storage
- */
 const LiveCamera = ({
   onRecognitionResult,
   isProcessing = false,
   apiBaseUrl = 'http://localhost:8080',
-  instruction = 'What do you see? Identify this item and suggest a price.',
-  interval = 500,
-  deduplicationThreshold = 0.6 // Configurable deduplication threshold
+  instruction = 'Identify this item for eBay listing. Focus on: item name, condition, estimated market price, and eBay category. Respond in JSON format.',
+  interval = 1000,
+  deduplicationThreshold = 0.6
 }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -29,6 +22,7 @@ const LiveCamera = ({
   const [lastResponse, setLastResponse] = useState('');
   const [detectedItems, setDetectedItems] = useState([]);
   const [similarItems, setSimilarItems] = useState([]);
+  const [processingCount, setProcessingCount] = useState(0);
 
   // Initialize camera and services on mount
   useEffect(() => {
@@ -39,13 +33,23 @@ const LiveCamera = ({
     };
   }, []);
 
+  // Auto-start recognition when camera is ready
+  useEffect(() => {
+    if (cameraReady && !isActive) {
+      // Auto-start after a short delay
+      const timer = setTimeout(() => {
+        handleStart();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cameraReady]);
+
   const initServices = async () => {
     try {
-      // Initialize local vector store for similarity matching
       await localVectorStore.initialize();
-      console.log('Vector store initialized');
+      console.log('✅ Vector store initialized');
     } catch (error) {
-      console.warn('Vector store initialization failed:', error);
+      console.warn('⚠️ Vector store initialization failed:', error);
     }
   };
 
@@ -53,7 +57,7 @@ const LiveCamera = ({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          facingMode: 'environment', // Use back camera on mobile
+          facingMode: 'environment',
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }, 
@@ -63,12 +67,17 @@ const LiveCamera = ({
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
-        setCameraReady(true);
-        setError('');
+        
+        // Wait for video to be ready
+        videoRef.current.onloadedmetadata = () => {
+          setCameraReady(true);
+          setError('');
+          console.log('📷 Camera initialized successfully');
+        };
       }
     } catch (err) {
-      console.error('Error accessing camera:', err);
-      setError(`Camera error: ${err.name} - ${err.message}. Please ensure permissions are granted and you are on HTTPS or localhost.`);
+      console.error('❌ Camera error:', err);
+      setError(`Camera error: ${err.message}`);
     }
   };
 
@@ -88,8 +97,7 @@ const LiveCamera = ({
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    if (!streamRef.current || !video || !video.videoWidth) {
-      console.warn('Video stream not ready for capture.');
+    if (!video || !canvas || video.videoWidth === 0) {
       return null;
     }
     
@@ -102,186 +110,206 @@ const LiveCamera = ({
 
   const sendChatCompletionRequest = async (instruction, imageBase64URL) => {
     try {
-      // Input validation for instruction and imageBase64URL
-      if (typeof instruction !== 'string' || instruction.length > 500) {
-        throw new Error('Invalid instruction input');
-      }
-      if (typeof imageBase64URL !== 'string' || !imageBase64URL.startsWith('data:image/')) {
-        throw new Error('Invalid image data');
-      }
-      // For llamafile with LLaVA, we need to use the completion endpoint with image data
-      const imageData = imageBase64URL.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+      const imageData = imageBase64URL.split(',')[1];
       
-      const response = await fetch(`${apiBaseUrl}/completion`, {
+      // Try LlamaFile chat/completions endpoint first
+      const response = await fetch(`${apiBaseUrl}/v1/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          prompt: `USER: ${instruction} Please respond in this JSON format: {"itemName": "specific item name", "category": "eBay category", "condition": "new/used/good/fair", "suggestedPrice": "price range like $10-25", "description": "brief description", "confidence": 0.85}\nASSISTANT:`,
+          model: "llava",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `${instruction} Please respond in this exact JSON format: {"itemName": "specific item name", "category": "eBay category", "condition": "new/used/good/fair", "suggestedPrice": "price range like $10-25", "description": "brief description", "confidence": 0.85}`
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageBase64URL
+                  }
+                }
+              ]
+            }
+          ],
           max_tokens: 200,
-          temperature: 0.1,
-          image_data: [{
-            data: imageData,
-            id: 1
-          }]
+          temperature: 0.1
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Server error: ${response.status} - ${errorData}`);
+        // Fallback to completion endpoint
+        return await sendCompletionRequest(instruction, imageData);
       }
 
       const data = await response.json();
-      const content = data.content;
+      const content = data.choices?.[0]?.message?.content || data.content || '';
       
-      // Try to parse JSON response, fallback to text parsing
-      try {
-        const jsonMatch = content.match(/\{.*\}/s);
-        if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
-        }
-      } catch (parseError) {
-        console.log('JSON parse failed, using text parsing:', parseError);
-      }
-      
-      // Fallback: parse text response for key information
-      return parseTextResponse(content);
+      return parseAIResponse(content);
       
     } catch (error) {
+      console.error('AI request failed:', error);
       throw new Error(`AI Service Error: ${error.message}`);
     }
   };
 
-  // Parse unstructured text response into structured data
+  const sendCompletionRequest = async (instruction, imageData) => {
+    const response = await fetch(`${apiBaseUrl}/completion`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: `USER: ${instruction}\nASSISTANT:`,
+        max_tokens: 200,
+        temperature: 0.1,
+        image_data: [{
+          data: imageData,
+          id: 1
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return parseAIResponse(data.content);
+  };
+
+  const parseAIResponse = (content) => {
+    try {
+      // Try to extract JSON from response
+      const jsonMatch = content.match(/\{[^}]*\}/s);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          itemName: parsed.itemName || 'Unknown Item',
+          category: parsed.category || 'Other',
+          condition: parsed.condition || 'good',
+          suggestedPrice: parsed.suggestedPrice || '$5-20',
+          description: parsed.description || content.substring(0, 100),
+          confidence: parsed.confidence || 0.75
+        };
+      }
+    } catch (parseError) {
+      console.log('JSON parse failed, using text parsing');
+    }
+    
+    // Fallback text parsing
+    return parseTextResponse(content);
+  };
+
   const parseTextResponse = (text) => {
-    const lowerText = text.toLowerCase();
-    
-    // Extract price patterns
     const priceMatch = text.match(/\$\d+(?:\.\d{2})?(?:\s*-\s*\$?\d+(?:\.\d{2})?)?/);
-    const price = priceMatch ? priceMatch[0] : '';
+    const categories = ['Electronics', 'Clothing', 'Home & Garden', 'Toys', 'Books', 'Health & Beauty', 'Sports', 'Automotive'];
+    const foundCategory = categories.find(cat => text.toLowerCase().includes(cat.toLowerCase())) || 'Other';
     
-    // Common eBay categories for everyday items
-    const categories = ['Electronics', 'Clothing', 'Home & Garden', 'Toys & Hobbies', 'Books', 'Health & Beauty', 'Sports', 'Automotive', 'Collectibles'];
-    const foundCategory = categories.find(cat => lowerText.includes(cat.toLowerCase())) || 'Other';
-    
-    // Extract first sentence as item name
     const sentences = text.split(/[.!?]/);
-    const itemName = sentences[0]?.trim() || 'Unknown Item';
+    const itemName = sentences[0]?.trim().substring(0, 50) || 'Unknown Item';
     
     return {
-      itemName: itemName.length > 50 ? itemName.substring(0, 50) + '...' : itemName,
+      itemName,
       category: foundCategory,
-      condition: lowerText.includes('new') ? 'new' : lowerText.includes('used') ? 'used' : 'good',
-      suggestedPrice: price || '$5-20',
-      description: text.length > 100 ? text.substring(0, 100) + '...' : text,
-      confidence: 0.75 // Default confidence for text parsing
+      condition: text.toLowerCase().includes('new') ? 'new' : 'used',
+      suggestedPrice: priceMatch?.[0] || '$5-20',
+      description: text.substring(0, 100),
+      confidence: 0.75
     };
   };
 
-  // Handles vector embedding and similarity search for a detected item
-  const handleVectorProcessing = useCallback((detectedItem, imageBase64URL) => {
-    try {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const imageElement = new Image();
-        imageElement.onload = async () => {
-          try {
-            // Generate image embedding
-            const embedding = await localVectorStore.generateImageEmbedding(imageElement);
-            // Store the vector with metadata
-            localVectorStore.storeVector(detectedItem.id.toString(), embedding, {
-              itemName: detectedItem.name,
-              category: detectedItem.category,
-              price: detectedItem.estimatedPrice,
-              condition: detectedItem.condition,
-              confidence: detectedItem.confidence
-            });
-            // Find similar items
-            const similar = localVectorStore.findSimilar(embedding, 3, 0.6);
-            setSimilarItems(similar);
-            // Auto-save vectors
-            localVectorStore.saveToStorage();
-          } catch (vectorError) {
-            console.warn('Vector processing failed:', vectorError);
-          }
-        };
-        imageElement.src = imageBase64URL;
-      }
-    } catch (vectorError) {
-      console.warn('Vector embedding failed:', vectorError);
-    }
-  }, []);
-
-  // Handles Gun.js sync for a detected item and AI response
-  const handleGunSync = useCallback((detectedItem, aiResponse, imageBase64URL) => {
-    try {
-      if (gunDataService.getCurrentUser()) {
-        // Create item in Gun.js
-        const gunItem = gunDataService.createItem({
-          name: detectedItem.name,
-          category: detectedItem.category,
-          condition: detectedItem.condition,
-          price: detectedItem.estimatedPrice,
-          description: detectedItem.description,
-          confidence: detectedItem.confidence,
-          images: [imageBase64URL],
-          status: 'recognized'
-        });
-        // Store recognition data
-        gunDataService.storeRecognition(gunItem.id, {
-          ai_response: aiResponse,
-          confidence: detectedItem.confidence,
-          image_data: imageBase64URL
-        });
-        console.log('Item synced to Gun.js:', gunItem.id);
-      }
-    } catch (gunError) {
-      console.warn('Gun.js sync failed:', gunError);
-    }
-  }, []);
-
-  // Orchestrates the frame processing pipeline
   const processFrame = useCallback(async () => {
-    if (!isActive) return;
+    if (!isActive || !cameraReady) return;
+    
     const imageBase64URL = captureImage();
     if (!imageBase64URL) {
-      setError('Failed to capture image. Stream might not be active.');
       return;
     }
+
+    setProcessingCount(prev => prev + 1);
+
     try {
+      console.log('🔍 Processing frame...');
       const aiResponse = await sendChatCompletionRequest(instruction, imageBase64URL);
-      setLastResponse(typeof aiResponse === 'string' ? aiResponse : aiResponse.description);
+      
+      setLastResponse(`Found: ${aiResponse.itemName} - ${aiResponse.suggestedPrice}`);
       setError('');
-      // Create detected item object
+
+      // Create detected item with random position for demonstration
       const detectedItem = {
         id: Date.now(),
-        name: aiResponse.itemName || 'Unknown Item',
-        confidence: aiResponse.confidence || 0.75,
-        estimatedPrice: aiResponse.suggestedPrice || '$5-20',
-        category: aiResponse.category || 'Other',
-        condition: aiResponse.condition || 'good',
-        description: aiResponse.description || '',
-        x: 50 + Math.random() * 30,
-        y: 40 + Math.random() * 20,
+        name: aiResponse.itemName,
+        confidence: aiResponse.confidence,
+        estimatedPrice: aiResponse.suggestedPrice,
+        category: aiResponse.category,
+        condition: aiResponse.condition,
+        description: aiResponse.description,
+        x: 30 + Math.random() * 40, // Random position in center area
+        y: 30 + Math.random() * 40,
+        width: 120 + Math.random() * 60,
+        height: 80 + Math.random() * 40,
         imageData: imageBase64URL,
         timestamp: Date.now()
       };
-      handleVectorProcessing(detectedItem, imageBase64URL);
-      handleGunSync(detectedItem, aiResponse, imageBase64URL);
-        // Deduplicate by vector similarity: only add if not similar to existing items
-        let isDuplicate = false;
-        if (similarItems && Array.isArray(similarItems) && similarItems.length > 0) {
-          // If any similar item has a similarity above threshold, treat as duplicate
-          // Assume similarItems[i] has a 'similarity' property (0-1), and 'id' or 'itemName'
-          isDuplicate = similarItems.some(sim => sim.similarity >= deduplicationThreshold);
+
+      // Add to detected items (keep last 5)
+      setDetectedItems(prev => {
+        const newItems = [detectedItem, ...prev].slice(0, 5);
+        return newItems;
+      });
+
+      // Vector processing
+      try {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const imageElement = new Image();
+          imageElement.onload = async () => {
+            try {
+              const embedding = await localVectorStore.generateImageEmbedding(imageElement);
+              await localVectorStore.storeVector(detectedItem.id.toString(), embedding, {
+                itemName: detectedItem.name,
+                category: detectedItem.category,
+                price: detectedItem.estimatedPrice,
+                confidence: detectedItem.confidence
+              });
+              
+              const similar = localVectorStore.findSimilar(embedding, 3, 0.6);
+              setSimilarItems(similar);
+            } catch (vectorError) {
+              console.warn('Vector processing failed:', vectorError);
+            }
+          };
+          imageElement.src = imageBase64URL;
         }
-        if (!isDuplicate) {
-          setDetectedItems(prev => Array.isArray(prev) ? [...prev, detectedItem] : [detectedItem]);
-        } else {
-          setLastResponse('Duplicate item detected (vector similarity). Not added.');
+      } catch (vectorError) {
+        console.warn('Vector embedding failed:', vectorError);
+      }
+
+      // Gun.js sync
+      try {
+        if (gunDataService.getCurrentUser()) {
+          const gunItem = gunDataService.createItem({
+            name: detectedItem.name,
+            category: detectedItem.category,
+            condition: detectedItem.condition,
+            price: detectedItem.estimatedPrice,
+            description: detectedItem.description,
+            confidence: detectedItem.confidence,
+            images: [imageBase64URL],
+            status: 'recognized'
+          });
         }
+      } catch (gunError) {
+        console.warn('Gun.js sync failed:', gunError);
+      }
+
+      // Callback
       if (onRecognitionResult) {
         onRecognitionResult({
           itemName: detectedItem.name,
@@ -296,27 +324,25 @@ const LiveCamera = ({
           itemId: detectedItem.id
         });
       }
+
     } catch (error) {
-      console.error('Recognition error:', error);
-      setError(error.message);
-      setDetectedItems([]);
+      console.error('❌ Recognition error:', error);
+      setError(`Recognition failed: ${error.message}`);
     }
-  }, [isActive, instruction, captureImage, onRecognitionResult, apiBaseUrl, similarItems, handleVectorProcessing, handleGunSync]);
+  }, [isActive, cameraReady, instruction, captureImage, onRecognitionResult, apiBaseUrl, similarItems]);
 
   const handleStart = () => {
     if (!cameraReady) {
-      setError('Camera not available. Cannot start.');
+      setError('Camera not ready');
       return;
     }
     
     setIsActive(true);
     setError('');
-    setLastResponse('Processing started...');
+    setLastResponse('🚀 Scanning started...');
+    setDetectedItems([]);
     
-    // Initial immediate call
-    processFrame();
-    
-    // Then set interval
+    // Start processing
     intervalRef.current = setInterval(processFrame, interval);
   };
 
@@ -326,8 +352,7 @@ const LiveCamera = ({
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    setLastResponse('Processing stopped.');
-    setDetectedItems([]);
+    setLastResponse('⏹️ Scanning stopped');
   };
 
   const toggleProcessing = () => {
@@ -340,7 +365,7 @@ const LiveCamera = ({
 
   return (
     <div className="flex flex-col items-center gap-4 p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Simply Ebay - Live Scanner</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">📷 Simply eBay - Live Scanner</h1>
       
       {/* Camera Feed with Reticle Overlay */}
       <div className="relative">
@@ -359,8 +384,15 @@ const LiveCamera = ({
           showPrices={true}
           showConfidence={true}
           onItemClick={(item) => {
-            console.log('Item clicked:', item);
-            // Could trigger detailed view or quick actions
+            console.log('🎯 Item clicked:', item);
+            if (onRecognitionResult) {
+              onRecognitionResult({
+                itemName: item.name,
+                suggestedPrice: item.estimatedPrice,
+                category: item.category,
+                itemId: item.id
+              });
+            }
           }}
         />
       </div>
@@ -369,23 +401,17 @@ const LiveCamera = ({
       
       {/* Controls */}
       <div className="flex flex-col items-center gap-4 w-full max-w-lg">
-        {/* Interval selector */}
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">
-            Scan interval:
-          </label>
-          <select 
-            value={interval} 
-            onChange={(e) => {/* interval prop change if needed */}}
-            className="px-3 py-1 border border-gray-300 rounded text-sm"
-            disabled={isActive}
-          >
-            <option value="100">100ms</option>
-            <option value="250">250ms</option>
-            <option value="500">500ms</option>
-            <option value="1000">1s</option>
-            <option value="2000">2s</option>
-          </select>
+        {/* Status Info */}
+        <div className="flex items-center gap-4 text-sm">
+          <div className={`flex items-center gap-1 ${cameraReady ? 'text-green-600' : 'text-red-600'}`}>
+            📷 Camera: {cameraReady ? 'Ready' : 'Loading...'}
+          </div>
+          <div className={`flex items-center gap-1 ${isActive ? 'text-green-600' : 'text-gray-600'}`}>
+            🔍 Scanning: {isActive ? 'Active' : 'Stopped'}
+          </div>
+          <div className="text-blue-600">
+            🎯 Items: {detectedItems.length}
+          </div>
         </div>
         
         {/* Start/Stop button */}
@@ -398,27 +424,26 @@ const LiveCamera = ({
               : 'bg-green-500 hover:bg-green-600'
           } disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors`}
         >
-          {isActive ? 'Stop Scanning' : 'Start Scanning'}
+          {isActive ? '⏹️ Stop Scanning' : '▶️ Start Scanning'}
         </button>
         
         {/* Status display */}
         <div className="w-full">
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-2">
-              {error}
-            </div>
-          )}
-          
-          {!cameraReady && !error && (
-            <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-2">
-              Requesting camera access...
+              ❌ {error}
             </div>
           )}
           
           {lastResponse && (
             <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-              <div className="text-sm font-medium mb-1">AI Response:</div>
+              <div className="text-sm font-medium mb-1">🤖 AI Response:</div>
               <div className="text-sm">{lastResponse}</div>
+              {processingCount > 0 && (
+                <div className="text-xs mt-1 opacity-70">
+                  Processed {processingCount} frame{processingCount !== 1 ? 's' : ''}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -426,6 +451,5 @@ const LiveCamera = ({
     </div>
   );
 };
-
 
 export default LiveCamera;
