@@ -30,7 +30,38 @@ function MyApp({ Component, pageProps }) {
     }
   }, []);
 
-  // Show loading screen during hydration
+  // Pages with custom layouts bypass hydration loading screen entirely
+  if (Component.getLayout) {
+    const getLayout = Component.getLayout;
+    return (
+      <>
+        <Head>
+          <meta name="application-name" content="Simply eBay" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="Simply eBay" />
+          <meta name="description" content="AI-powered camera app to scan, identify, and list items on eBay instantly" />
+          <meta name="format-detection" content="telephone=no" />
+          <meta name="mobile-web-app-capable" content="yes" />
+          <meta name="theme-color" content="#3b82f6" />
+          
+          <link rel="apple-touch-icon" href="/icon-192.png" />
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="shortcut icon" href="/favicon.ico" />
+          
+          {/* Prevent zoom on mobile forms */}
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        </Head>
+        <div className={inter.className}>
+          <AuthProvider>
+            {getLayout(<Component {...pageProps} />)}
+          </AuthProvider>
+        </div>
+      </>
+    );
+  }
+
+  // Show loading screen during hydration for pages that use default layout
   if (!isClient) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
@@ -68,9 +99,9 @@ function MyApp({ Component, pageProps }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </Head>
       <div className={inter.className}>
-      <AuthProvider>
-        {getLayout(<Component {...pageProps} />)}
-      </AuthProvider>
+        <AuthProvider>
+          {getLayout(<Component {...pageProps} />)}
+        </AuthProvider>
       </div>
     </>
   );
