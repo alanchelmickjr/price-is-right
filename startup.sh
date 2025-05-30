@@ -192,6 +192,12 @@ echo -e "${GREEN}🔫 Gun.js Relay:${NC}  http://localhost:8765"
 if check_port 8080; then
     echo -e "${GREEN}🤖 AI Server:${NC}     http://localhost:8080"
 fi
+
+# Open the main application in browser
+sleep 2
+echo "🌐 Opening Simply eBay in your browser..."
+open http://localhost:3000
+
 echo ""
 echo -e "${BLUE}📱 Mobile URLs (for testing on devices):${NC}"
 echo -e "   WiFi: http://$(ipconfig getifaddr en0 2>/dev/null || echo "YOUR_IP"):3000"
@@ -251,3 +257,4 @@ while true; do
 done
 
 cleanup
+

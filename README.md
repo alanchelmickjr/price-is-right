@@ -122,14 +122,16 @@ pnpm install
 ## ⚡ **One-Command Launch**
 
 ```bash
-./start-simply-ebay.sh
+./startup.sh
 ```
 
-This launches everything you need:
-- Next.js development server
-- Gun.js P2P relay
-- LlamaFile AI models
-- System validation checks
+This comprehensive script:
+- ✅ **Cleans ports** - Kills any conflicting processes
+- ✅ **Starts services** - Gun.js relay, LlamaFile AI, Next.js
+- ✅ **Monitors health** - Checks if services are responding
+- ✅ **Opens browser** - Launches your app automatically
+- ✅ **Shows mobile URLs** - For testing on phones
+- ✅ **Handles cleanup** - Proper shutdown on Ctrl+C
 
 ---
 
