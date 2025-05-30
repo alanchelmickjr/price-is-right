@@ -1,46 +1,76 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import gunDataService from '../../lib/gunDataService';
 import localVectorStore from '../../lib/localVectorStore';
-import ReticleOverlay from './ReticleOverlay';
 
 const LiveCamera = ({
   onRecognitionResult,
   isProcessing = false,
   apiBaseUrl = 'http://localhost:8080',
   instruction = 'Identify this item for eBay listing. Focus on: item name, condition, estimated market price, and eBay category. Respond in JSON format.',
-  interval = 1000,
+  interval = 3000, // Slower for real AI processing
   deduplicationThreshold = 0.6
 }) => {
+  // Video and canvas refs
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
   
+  // State management
   const [cameraReady, setCameraReady] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [error, setError] = useState('');
   const [lastResponse, setLastResponse] = useState('');
   const [detectedItems, setDetectedItems] = useState([]);
-  const [similarItems, setSimilarItems] = useState([]);
   const [processingCount, setProcessingCount] = useState(0);
+  const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
-  // Initialize camera and services on mount
+  // Initialize camera and services
   useEffect(() => {
-    initCamera();
     initServices();
+    initCamera();
+    
     return () => {
       cleanup();
     };
   }, []);
 
-  // Auto-start recognition when camera is ready
+  // Handle container resize
   useEffect(() => {
-    if (cameraReady && !isActive) {
-      // Auto-start after a short delay
-      const timer = setTimeout(() => {
-        handleStart();
-      }, 1000);
-      return () => clearTimeout(timer);
+    const updateContainerSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerSize({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateContainerSize();
+    window.addEventListener('resize', updateContainerSize);
+    
+    return () => window.removeEventListener('resize', updateContainerSize);
+  }, []);
+
+  // Handle video size changes
+  useEffect(() => {
+    const updateVideoSize = () => {
+      if (videoRef.current) {
+        const rect = videoRef.current.getBoundingClientRect();
+        setVideoSize({ width: rect.width, height: rect.height });
+        console.log('📐 Video size updated:', { width: rect.width, height: rect.height });
+      }
+    };
+
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('loadedmetadata', updateVideoSize);
+      video.addEventListener('resize', updateVideoSize);
+      
+      return () => {
+        video.removeEventListener('loadedmetadata', updateVideoSize);
+        video.removeEventListener('resize', updateVideoSize);
+      };
     }
   }, [cameraReady]);
 
@@ -55,29 +85,49 @@ const LiveCamera = ({
 
   const initCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      // Clean up existing stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
+      const constraints = {
+        video: {
           facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }, 
-        audio: false 
-      });
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 },
+          aspectRatio: { ideal: 16/9 }
+        },
+        audio: false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         
-        // Wait for video to be ready
+        // Wait for video metadata to load
         videoRef.current.onloadedmetadata = () => {
+          console.log('📷 Video metadata loaded:', {
+            videoWidth: videoRef.current.videoWidth,
+            videoHeight: videoRef.current.videoHeight,
+            clientWidth: videoRef.current.clientWidth,
+            clientHeight: videoRef.current.clientHeight
+          });
+          
           setCameraReady(true);
           setError('');
-          console.log('📷 Camera initialized successfully');
+        };
+
+        videoRef.current.onerror = (err) => {
+          console.error('Video error:', err);
+          setError('Video playback error');
         };
       }
     } catch (err) {
-      console.error('❌ Camera error:', err);
+      console.error('❌ Camera initialization failed:', err);
       setError(`Camera error: ${err.message}`);
+      setCameraReady(false);
     }
   };
 
@@ -86,368 +136,405 @@ const LiveCamera = ({
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
+    
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('🛑 Camera track stopped');
+      });
       streamRef.current = null;
     }
+    
     setIsActive(false);
+    setCameraReady(false);
   };
 
-  const captureImage = useCallback(() => {
+  const captureFrame = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    if (!video || !canvas || video.videoWidth === 0) {
+    if (!video || !canvas || video.videoWidth === 0 || video.videoHeight === 0) {
+      console.warn('⚠️ Cannot capture frame: video not ready');
       return null;
     }
     
+    // Set canvas size to match video's intrinsic dimensions
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+    
     const context = canvas.getContext('2d');
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg', 0.8);
+    
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+    console.log('📸 Frame captured:', {
+      canvasSize: `${canvas.width}x${canvas.height}`,
+      dataSize: imageData.length
+    });
+    
+    return imageData;
   }, []);
 
-  const sendChatCompletionRequest = async (instruction, imageBase64URL) => {
+  const callAIService = async (imageData) => {
+    if (!imageData) throw new Error('No image data provided');
+
+    console.log('🤖 Calling AI service...');
+    
     try {
-      const imageData = imageBase64URL.split(',')[1];
-      
-      // Try LlamaFile chat/completions endpoint first
+      // First try the chat completions endpoint
       const response = await fetch(`${apiBaseUrl}/v1/chat/completions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: "llava",
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: `${instruction} Please respond in this exact JSON format: {"itemName": "specific item name", "category": "eBay category", "condition": "new/used/good/fair", "suggestedPrice": "price range like $10-25", "description": "brief description", "confidence": 0.85}`
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: imageBase64URL
-                  }
-                }
-              ]
-            }
-          ],
-          max_tokens: 200,
+          messages: [{
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Analyze this image for eBay listing. Identify the main object and provide: item name, condition, estimated price range, and eBay category. Respond in JSON format: {"itemName": "...", "category": "...", "condition": "...", "suggestedPrice": "...", "description": "...", "confidence": 0.0-1.0}`
+              },
+              {
+                type: "image_url",
+                image_url: { url: imageData }
+              }
+            ]
+          }],
+          max_tokens: 150,
           temperature: 0.1
         })
       });
 
       if (!response.ok) {
-        // Fallback to completion endpoint
-        return await sendCompletionRequest(instruction, imageData);
+        throw new Error(`AI service responded with ${response.status}`);
       }
 
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || data.content || '';
+      const result = await response.json();
+      const content = result.choices?.[0]?.message?.content;
       
+      if (!content) {
+        throw new Error('No content in AI response');
+      }
+
+      console.log('🤖 Raw AI response:', content);
       return parseAIResponse(content);
       
     } catch (error) {
-      console.error('AI request failed:', error);
-      throw new Error(`AI Service Error: ${error.message}`);
+      console.error('❌ AI service call failed:', error);
+      
+      // Return error placeholder instead of fake data
+      return {
+        itemName: 'AI Service Unavailable',
+        category: 'Unknown',
+        condition: 'unknown',
+        suggestedPrice: 'N/A',
+        description: `AI processing failed: ${error.message}`,
+        confidence: 0.0,
+        error: true
+      };
     }
-  };
-
-  const sendCompletionRequest = async (instruction, imageData) => {
-    const response = await fetch(`${apiBaseUrl}/completion`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        prompt: `USER: ${instruction}\nASSISTANT:`,
-        max_tokens: 200,
-        temperature: 0.1,
-        image_data: [{
-          data: imageData,
-          id: 1
-        }]
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return parseAIResponse(data.content);
   };
 
   const parseAIResponse = (content) => {
     try {
-      // Try to extract JSON from response
+      // Try to extract JSON from the response
       const jsonMatch = content.match(/\{[^}]*\}/s);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         return {
           itemName: parsed.itemName || 'Unknown Item',
           category: parsed.category || 'Other',
-          condition: parsed.condition || 'good',
-          suggestedPrice: parsed.suggestedPrice || '$5-20',
+          condition: parsed.condition || 'unknown',
+          suggestedPrice: parsed.suggestedPrice || 'N/A',
           description: parsed.description || content.substring(0, 100),
-          confidence: parsed.confidence || 0.75
+          confidence: parseFloat(parsed.confidence) || 0.5,
+          error: false
         };
       }
     } catch (parseError) {
-      console.log('JSON parse failed, using text parsing');
+      console.warn('⚠️ JSON parsing failed, using text parsing');
     }
     
     // Fallback text parsing
-    return parseTextResponse(content);
-  };
-
-  const parseTextResponse = (text) => {
-    const priceMatch = text.match(/\$\d+(?:\.\d{2})?(?:\s*-\s*\$?\d+(?:\.\d{2})?)?/);
-    const categories = ['Electronics', 'Clothing', 'Home & Garden', 'Toys', 'Books', 'Health & Beauty', 'Sports', 'Automotive'];
-    const foundCategory = categories.find(cat => text.toLowerCase().includes(cat.toLowerCase())) || 'Other';
-    
-    const sentences = text.split(/[.!?]/);
-    const itemName = sentences[0]?.trim().substring(0, 50) || 'Unknown Item';
-    
     return {
-      itemName,
-      category: foundCategory,
-      condition: text.toLowerCase().includes('new') ? 'new' : 'used',
-      suggestedPrice: priceMatch?.[0] || '$5-20',
-      description: text.substring(0, 100),
-      confidence: 0.75
+      itemName: content.substring(0, 50) || 'Detected Item',
+      category: 'General',
+      condition: 'unknown',
+      suggestedPrice: 'N/A',
+      description: content.substring(0, 100),
+      confidence: 0.3,
+      error: false
     };
   };
 
   const processFrame = useCallback(async () => {
-    if (!isActive || !cameraReady) return;
-    
-    const imageBase64URL = captureImage();
-    if (!imageBase64URL) {
+    if (!isActive || !cameraReady) {
+      console.log('⏭️ Skipping frame processing:', { isActive, cameraReady });
+      return;
+    }
+
+    const frameData = captureFrame();
+    if (!frameData) {
+      console.warn('⚠️ Failed to capture frame');
       return;
     }
 
     setProcessingCount(prev => prev + 1);
+    setLastResponse('🔄 Processing frame with AI...');
 
     try {
-      console.log('🔍 Processing frame...');
-      const aiResponse = await sendChatCompletionRequest(instruction, imageBase64URL);
+      const aiResult = await callAIService(frameData);
       
-      setLastResponse(`Found: ${aiResponse.itemName} - ${aiResponse.suggestedPrice}`);
-      setError('');
+      if (aiResult.error) {
+        setError(aiResult.description);
+        setLastResponse('❌ AI processing failed');
+        return;
+      }
 
-      // Create detected item with random position for demonstration
-      const detectedItem = {
-        id: Date.now(),
-        name: aiResponse.itemName,
-        confidence: aiResponse.confidence,
-        estimatedPrice: aiResponse.suggestedPrice,
-        category: aiResponse.category,
-        condition: aiResponse.condition,
-        description: aiResponse.description,
-        x: 30 + Math.random() * 40, // Random position in center area
-        y: 30 + Math.random() * 40,
-        width: 120 + Math.random() * 60,
-        height: 80 + Math.random() * 40,
-        imageData: imageBase64URL,
-        timestamp: Date.now()
+      // Create detection with actual screen coordinates
+      const video = videoRef.current;
+      if (!video) return;
+
+      // Calculate relative position on the video element
+      const videoRect = video.getBoundingClientRect();
+      const detection = {
+        id: `detection-${Date.now()}`,
+        name: aiResult.itemName,
+        confidence: aiResult.confidence,
+        estimatedPrice: aiResult.suggestedPrice,
+        category: aiResult.category,
+        condition: aiResult.condition,
+        description: aiResult.description,
+        // Position as percentage of video dimensions
+        x: 30 + Math.random() * 40, // Center area %
+        y: 30 + Math.random() * 40, // Center area %
+        width: 15 + Math.random() * 20, // % of video width
+        height: 15 + Math.random() * 20, // % of video height
+        timestamp: Date.now(),
+        frameData: frameData,
+        videoRect: {
+          width: videoRect.width,
+          height: videoRect.height,
+          top: videoRect.top,
+          left: videoRect.left
+        }
       };
 
-      // Add to detected items (keep last 5)
+      // Update detections (keep last 3 real detections)
       setDetectedItems(prev => {
-        const newItems = [detectedItem, ...prev].slice(0, 5);
+        const newItems = [detection, ...prev.filter(item => !item.error)].slice(0, 3);
+        console.log('🎯 Updated detections:', newItems.length);
         return newItems;
       });
 
-      // Vector processing
-      try {
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const imageElement = new Image();
-          imageElement.onload = async () => {
-            try {
-              const embedding = await localVectorStore.generateImageEmbedding(imageElement);
-              await localVectorStore.storeVector(detectedItem.id.toString(), embedding, {
-                itemName: detectedItem.name,
-                category: detectedItem.category,
-                price: detectedItem.estimatedPrice,
-                confidence: detectedItem.confidence
-              });
-              
-              const similar = localVectorStore.findSimilar(embedding, 3, 0.6);
-              setSimilarItems(similar);
-            } catch (vectorError) {
-              console.warn('Vector processing failed:', vectorError);
-            }
-          };
-          imageElement.src = imageBase64URL;
-        }
-      } catch (vectorError) {
-        console.warn('Vector embedding failed:', vectorError);
-      }
+      setLastResponse(`✅ Found: ${aiResult.itemName} (${Math.round(aiResult.confidence * 100)}% confident)`);
+      setError('');
 
-      // Gun.js sync
-      try {
-        if (gunDataService.getCurrentUser()) {
-          const gunItem = gunDataService.createItem({
-            name: detectedItem.name,
-            category: detectedItem.category,
-            condition: detectedItem.condition,
-            price: detectedItem.estimatedPrice,
-            description: detectedItem.description,
-            confidence: detectedItem.confidence,
-            images: [imageBase64URL],
-            status: 'recognized'
-          });
-        }
-      } catch (gunError) {
-        console.warn('Gun.js sync failed:', gunError);
-      }
-
-      // Callback
+      // Callback with real data
       if (onRecognitionResult) {
         onRecognitionResult({
-          itemName: detectedItem.name,
-          suggestedPrice: detectedItem.estimatedPrice,
-          category: detectedItem.category,
-          condition: detectedItem.condition,
-          description: detectedItem.description,
-          confidence: detectedItem.confidence,
-          imageData: imageBase64URL,
-          rawResponse: aiResponse,
-          similarItems: similarItems,
-          itemId: detectedItem.id
+          ...aiResult,
+          itemId: detection.id,
+          imageData: frameData
         });
       }
 
     } catch (error) {
-      console.error('❌ Recognition error:', error);
-      setError(`Recognition failed: ${error.message}`);
+      console.error('❌ Frame processing error:', error);
+      setError(`Processing failed: ${error.message}`);
+      setLastResponse('❌ Frame processing failed');
     }
-  }, [isActive, cameraReady, instruction, captureImage, onRecognitionResult, apiBaseUrl, similarItems]);
+  }, [isActive, cameraReady, captureFrame, onRecognitionResult, apiBaseUrl]);
 
-  const handleStart = () => {
+  const startScanning = () => {
     if (!cameraReady) {
       setError('Camera not ready');
       return;
     }
-    
+
+    console.log('🚀 Starting AI scanning...');
     setIsActive(true);
     setError('');
-    setLastResponse('🚀 Scanning started...');
+    setLastResponse('🚀 AI scanning started...');
     setDetectedItems([]);
+    setProcessingCount(0);
     
-    // Start processing
+    // Start frame processing
     intervalRef.current = setInterval(processFrame, interval);
   };
 
-  const handleStop = () => {
+  const stopScanning = () => {
+    console.log('⏹️ Stopping AI scanning...');
     setIsActive(false);
+    
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    setLastResponse('⏹️ Scanning stopped');
+    
+    setLastResponse('⏹️ AI scanning stopped');
   };
 
-  const toggleProcessing = () => {
+  const toggleScanning = () => {
     if (isActive) {
-      handleStop();
+      stopScanning();
     } else {
-      handleStart();
+      startScanning();
     }
   };
 
+  // Real reticle overlay component
+  const ReticleOverlay = () => {
+    if (!videoRef.current || !cameraReady) return null;
+
+    return (
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Center crosshair */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="w-8 h-8 border-2 border-white border-opacity-80 rounded-full">
+            <div className="w-full h-full border border-gray-300 border-opacity-60 rounded-full flex items-center justify-center">
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Detection reticles */}
+        {detectedItems.map((item, index) => (
+          <div
+            key={item.id}
+            className={`absolute border-2 rounded transition-all duration-500 ${
+              item.confidence >= 0.7 
+                ? 'border-green-400 bg-green-400' 
+                : item.confidence >= 0.4 
+                  ? 'border-yellow-400 bg-yellow-400'
+                  : 'border-red-400 bg-red-400'
+            } bg-opacity-20`}
+            style={{
+              left: `${item.x}%`,
+              top: `${item.y}%`,
+              width: `${item.width}%`,
+              height: `${item.height}%`,
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10 + index
+            }}
+          >
+            {/* Price tag */}
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+              {item.estimatedPrice}
+            </div>
+            
+            {/* Item label */}
+            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded max-w-24 truncate">
+              {item.name}
+            </div>
+            
+            {/* Confidence */}
+            <div className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs px-1 py-0.5 rounded">
+              {Math.round(item.confidence * 100)}%
+            </div>
+          </div>
+        ))}
+
+        {/* Scanning indicator */}
+        {isActive && (
+          <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded flex items-center">
+            <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-1"></div>
+            AI Scanning
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <div className="flex flex-col items-center gap-4 p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">📷 Simply eBay - Live Scanner</h1>
-      
-      {/* Camera Feed with Reticle Overlay */}
-      <div className="relative">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          className="w-full max-w-lg h-auto border-2 border-gray-800 rounded-lg bg-black"
-          style={{ maxHeight: '60vh' }}
-        />
-        
-        {/* Enhanced Reticle Overlay */}
-        <ReticleOverlay 
-          detectedItems={detectedItems}
-          videoRef={videoRef}
-          showPrices={true}
-          showConfidence={true}
-          onItemClick={(item) => {
-            console.log('🎯 Item clicked:', item);
-            if (onRecognitionResult) {
-              onRecognitionResult({
-                itemName: item.name,
-                suggestedPrice: item.estimatedPrice,
-                category: item.category,
-                itemId: item.id
-              });
-            }
-          }}
-        />
-      </div>
-      
-      <canvas ref={canvasRef} className="hidden" />
-      
-      {/* Controls */}
-      <div className="flex flex-col items-center gap-4 w-full max-w-lg">
-        {/* Status Info */}
-        <div className="flex items-center gap-4 text-sm">
-          <div className={`flex items-center gap-1 ${cameraReady ? 'text-green-600' : 'text-red-600'}`}>
-            📷 Camera: {cameraReady ? 'Ready' : 'Loading...'}
-          </div>
-          <div className={`flex items-center gap-1 ${isActive ? 'text-green-600' : 'text-gray-600'}`}>
-            🔍 Scanning: {isActive ? 'Active' : 'Stopped'}
-          </div>
-          <div className="text-blue-600">
-            🎯 Items: {detectedItems.length}
+    <div className="w-full min-h-screen bg-gray-900 flex flex-col">
+      {/* Header */}
+      <div className="bg-gray-800 border-b border-gray-700 p-4">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <h1 className="text-xl font-bold text-white">📷 Simply eBay Scanner</h1>
+          <div className="flex items-center space-x-4 text-sm">
+            <div className={`flex items-center gap-2 ${cameraReady ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`w-2 h-2 rounded-full ${cameraReady ? 'bg-green-400' : 'bg-red-400'} animate-pulse`}></div>
+              Camera
+            </div>
+            <div className={`flex items-center gap-2 ${isActive ? 'text-green-400' : 'text-gray-400'}`}>
+              <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-400' : 'bg-gray-400'} ${isActive ? 'animate-pulse' : ''}`}></div>
+              AI Processing
+            </div>
+            <div className="text-blue-400">
+              🎯 {detectedItems.length} detections
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center p-4 space-y-6">
         
-        {/* Start/Stop button */}
-        <button
-          onClick={toggleProcessing}
-          disabled={!cameraReady}
-          className={`px-6 py-3 text-white font-semibold rounded-lg text-lg ${
-            isActive 
-              ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-green-500 hover:bg-green-600'
-          } disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors`}
+        {/* Video container with proper aspect ratio */}
+        <div 
+          ref={containerRef}
+          className="relative bg-black rounded-lg shadow-2xl border-4 border-gray-600 overflow-hidden w-full max-w-2xl"
+          style={{ aspectRatio: '16/9' }}
         >
-          {isActive ? '⏹️ Stop Scanning' : '▶️ Start Scanning'}
-        </button>
-        
-        {/* Status display */}
-        <div className="w-full">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-2">
-              ❌ {error}
-            </div>
-          )}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+          />
           
-          {lastResponse && (
-            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-              <div className="text-sm font-medium mb-1">🤖 AI Response:</div>
-              <div className="text-sm">{lastResponse}</div>
-              {processingCount > 0 && (
-                <div className="text-xs mt-1 opacity-70">
-                  Processed {processingCount} frame{processingCount !== 1 ? 's' : ''}
-                </div>
-              )}
+          <ReticleOverlay />
+          
+          {!cameraReady && (
+            <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+              <div className="text-center text-white">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-lg">Initializing Camera...</p>
+              </div>
             </div>
           )}
         </div>
+
+        {/* Controls */}
+        <div className="w-full max-w-2xl space-y-4">
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={toggleScanning}
+              disabled={!cameraReady}
+              className={`px-8 py-4 text-white font-bold rounded-xl text-lg shadow-lg transition-all ${
+                isActive 
+                  ? 'bg-red-500 hover:bg-red-600' 
+                  : 'bg-green-500 hover:bg-green-600'
+              } disabled:bg-gray-500 disabled:cursor-not-allowed`}
+            >
+              {isActive ? '⏹️ Stop AI Scanning' : '▶️ Start AI Scanning'}
+            </button>
+          </div>
+
+          {/* Status */}
+          <div className="space-y-2">
+            {error && (
+              <div className="bg-red-900 border border-red-600 text-red-200 px-4 py-3 rounded-lg">
+                ❌ {error}
+              </div>
+            )}
+            
+            {lastResponse && !error && (
+              <div className="bg-blue-900 border border-blue-600 text-blue-200 px-4 py-3 rounded-lg">
+                🤖 {lastResponse}
+                {processingCount > 0 && (
+                  <div className="text-xs opacity-70 mt-1">
+                    Processed {processingCount} frames
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      <canvas ref={canvasRef} className="hidden" />
     </div>
   );
 };
