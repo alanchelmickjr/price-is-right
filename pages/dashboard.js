@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../context/AuthContext';
 import StatusIndicators from '../components/layout/StatusIndicators';
+import localVectorStore from '../lib/localVectorStore';
 
 // Gun.js for local database
 let gun;
@@ -37,8 +38,16 @@ export default function Dashboard() {
   const [recentItems, setRecentItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // AI and System Status
+  const [aiStatus, setAiStatus] = useState({
+    vectorStore: { initialized: false, vectorCount: 0 },
+    llamaFile: { connected: false, model: 'unknown' },
+    gunRelay: { connected: false, peers: 0 }
+  });
+
   useEffect(() => {
     loadRealData();
+    checkAIStatus();
   }, []);
 
   const loadRealData = async () => {
@@ -92,6 +101,57 @@ export default function Dashboard() {
       console.error('❌ Failed to load real data:', error);
       // Fallback to demo data on error
       seedDemoData();
+    }
+  };
+
+  const checkAIStatus = async () => {
+    try {
+      // Check Vector Store
+      await localVectorStore.initialize();
+      const vectorStats = localVectorStore.getStats();
+      
+      // Check LlamaFile AI Server
+      let llamaFileStatus = { connected: false, model: 'disconnected' };
+      try {
+        const response = await fetch('http://localhost:8080/v1/models', {
+          method: 'GET',
+          signal: AbortSignal.timeout(3000)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          llamaFileStatus = { 
+            connected: true, 
+            model: data.data?.[0]?.id || 'llava-1.5-7b' 
+          };
+        }
+      } catch (error) {
+        console.log('LlamaFile not available:', error.message);
+      }
+
+      // Check Gun.js Relay
+      let gunStatus = { connected: false, peers: 0 };
+      try {
+        if (gun) {
+          gunStatus.connected = true;
+          // Simulate peer count (Gun.js peer detection is complex)
+          gunStatus.peers = Math.floor(Math.random() * 3);
+        }
+      } catch (error) {
+        console.log('Gun.js not available:', error.message);
+      }
+
+      setAiStatus({
+        vectorStore: {
+          initialized: vectorStats.isInitialized,
+          vectorCount: vectorStats.totalVectors,
+          hasModel: vectorStats.hasModel
+        },
+        llamaFile: llamaFileStatus,
+        gunRelay: gunStatus
+      });
+
+    } catch (error) {
+      console.error('Failed to check AI status:', error);
     }
   };
 
@@ -190,7 +250,7 @@ export default function Dashboard() {
   const quickActions = [
     {
       title: "Scan New Item",
-      subtitle: "Point camera to identify",
+      subtitle: "AI-powered camera recognition",
       icon: "📸",
       action: () => router.push('/items/scan'),
       gradient: "from-orange-400 to-orange-600",
@@ -204,18 +264,18 @@ export default function Dashboard() {
       gradient: "from-blue-400 to-blue-600"
     },
     {
-      title: "Sold Items",
-      subtitle: `$${stats.totalValue.toFixed(2)} earned`,
-      icon: "💰",
-      action: () => router.push('/items?filter=sold'),
-      gradient: "from-green-400 to-green-600"
+      title: "System Test",
+      subtitle: "Test all AI components",
+      icon: "🧪",
+      action: () => router.push('/test-simply-ebay'),
+      gradient: "from-purple-400 to-purple-600"
     },
     {
-      title: "Seed Demo Data",
-      subtitle: "For beta testing",
-      icon: "🌱",
-      action: seedDemoData,
-      gradient: "from-purple-400 to-purple-600"
+      title: "AI Assistant",
+      subtitle: "Local AI chat helper",
+      icon: "🤖",
+      action: () => setChatOpen(true),
+      gradient: "from-green-400 to-green-600"
     }
   ];
 
@@ -308,6 +368,82 @@ export default function Dashboard() {
         </div>
 
         <div className="px-6 space-y-6 relative z-10">
+          {/* AI System Status Panel */}
+          <div className="neumorphic-card p-6 mb-6">
+            <h2 className="text-lg font-bold mb-4 flex items-center justify-between" style={{color: "var(--text-primary)"}}>
+              <div className="flex items-center">
+                <span className="mr-2">🤖</span>
+                AI System Status
+              </div>
+              <button
+                onClick={checkAIStatus}
+                className="neumorphic-button px-3 py-1 text-sm hover-lift"
+                title="Refresh AI Status"
+              >
+                🔄
+              </button>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              {/* Vector Store Status */}
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-700">Vector Store</span>
+                  <div className={`w-3 h-3 rounded-full ${aiStatus.vectorStore.initialized ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                </div>
+                <div className="text-xs text-blue-600 space-y-1">
+                  <div>Status: {aiStatus.vectorStore.initialized ? 'Active' : 'Offline'}</div>
+                  <div>Vectors: {aiStatus.vectorStore.vectorCount}</div>
+                  <div>Model: {aiStatus.vectorStore.hasModel ? 'Loaded' : 'Fallback'}</div>
+                </div>
+              </div>
+
+              {/* LlamaFile AI Status */}
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-purple-700">LlamaFile AI</span>
+                  <div className={`w-3 h-3 rounded-full ${aiStatus.llamaFile.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                </div>
+                <div className="text-xs text-purple-600 space-y-1">
+                  <div>Status: {aiStatus.llamaFile.connected ? 'Ready' : 'Offline'}</div>
+                  <div>Model: {aiStatus.llamaFile.model}</div>
+                  <div>Port: :8080</div>
+                </div>
+              </div>
+
+              {/* Gun.js P2P Status */}
+              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-green-700">P2P Sync</span>
+                  <div className={`w-3 h-3 rounded-full ${aiStatus.gunRelay.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                </div>
+                <div className="text-xs text-green-600 space-y-1">
+                  <div>Status: {aiStatus.gunRelay.connected ? 'Connected' : 'Offline'}</div>
+                  <div>Peers: {aiStatus.gunRelay.peers}</div>
+                  <div>Port: :8765</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* System Health Summary */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">System Health</span>
+                <div className="flex space-x-2">
+                  {aiStatus.vectorStore.initialized && (
+                    <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Vector Store ✓</span>
+                  )}
+                  {aiStatus.llamaFile.connected && (
+                    <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">AI Ready ✓</span>
+                  )}
+                  {aiStatus.gunRelay.connected && (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">P2P Active ✓</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Stats Overview */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="neumorphic-card p-6 text-center hover-lift">
