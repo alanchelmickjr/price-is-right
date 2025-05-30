@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
 /**
@@ -6,12 +6,19 @@ import { useRouter } from 'next/router';
  */
 export default function IndexPage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    router.replace('/splash');
-  }, [router]);
+    setMounted(true);
+  }, []);
 
-  // Prevent SSR/hydration mismatch: render nothing
+  useEffect(() => {
+    if (mounted) {
+      router.replace('/splash');
+    }
+  }, [router, mounted]);
+
+  // Always render null to prevent hydration issues
   return null;
 }
 
