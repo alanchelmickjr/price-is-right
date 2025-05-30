@@ -105,7 +105,7 @@ export default function StatusIndicators() {
 
   return (
     <div className="absolute bottom-0 left-0 right-0 p-4">
-      <div className="flex justify-between items-center">
+      <div className="status-indicators">
         {/* Left corner - Gun.js status */}
         <div className="flex items-center space-x-2">
           <div className={`w-3 h-3 rounded-full ${getStatusColor(gunStatus, 'gun')} ${gunStatus === 'syncing' ? 'animate-ping' : 'animate-pulse'}`}></div>

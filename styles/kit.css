@@ -1,0 +1,143 @@
+.sign-up-button {
+    all: unset;
+
+    background-color: white;
+    width: 100%;
+    max-width: 200px;
+    max-height: 64px;
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: medium;
+    color: rgb(85, 87, 94);
+    letter-spacing: -0.2px;
+    border: solid 0.5px rgb(234, 237, 243);
+    padding: 4px 16px;
+    border-radius: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+
+
+.Heading1   {
+    all: unset;
+
+    font-size: 20px;
+    letter-spacing: -1px;
+    font-weight: semibold;
+}
+
+.authform   {
+}
+
+.welcome-text-wrapper   {
+    all: unset;
+
+    display: flex;
+    flex-direction: column;
+    justify-self: start;
+    align-items: center;
+    gap: -20px;
+}
+
+
+.sign-up-button-wrapper {
+    all: unset;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sign-up-wrapper{
+    all: unset;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+}
+
+.primary-button {
+    all: unset;
+
+    width: 100%;
+    background-color: blueviolet;
+    text-align: center;
+    height: 40px;
+    border-radius: 20px;
+    color: white;
+    letter-spacing: -0.2px;
+    font-weight: semibold;
+    font-size: 13.5px;
+}
+
+.ghost-button   {
+    all:  unset;
+
+    font-size: 14px;
+    color: blue;
+}
+
+
+
+.login-wrapper  {
+    background-color: rgb(248, 249, 252);
+    padding: 8px;
+    border-radius: 36px;
+    width: 100%;
+    max-width: 4400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+.login-section  {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-input  {
+    all: unset;
+
+    min-height: 32px;
+    border-radius: 20px;
+    background-color: white;
+    padding: 4px 16px;
+    font-size: 14px;
+    background-color: white;
+}
+
+.input-group    {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-label    {
+    font-size: 13px;
+    margin: 0px 12px;
+}
+
+.password-input {
+    background-color: white;
+    outline: none;
+}
+
+input:active {
+    outline: none;
+}
+
+input:-webkit-autofill {
+    box-shadow: 0 0 0px 1000px white inset !important;
+    border: none;
+    -webkit-text-fill-color: #000 !important;
+  }
+
+  .status-indicators {
+    text-align: center;
+    font-size: 13px;
+  }
