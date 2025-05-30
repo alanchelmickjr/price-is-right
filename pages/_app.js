@@ -98,7 +98,7 @@ function MyApp({ Component, pageProps }) {
         {/* Prevent zoom on mobile forms */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </Head>
-      <div className={inter.className}>
+      <div className={`${inter.variable} font-sans`}>
         <AuthProvider>
           {getLayout(<Component {...pageProps} />)}
         </AuthProvider>
