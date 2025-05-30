@@ -3,6 +3,14 @@ import Head from 'next/head';
 import { AuthProvider } from '../context/AuthContext';
 import Layout from '../components/layout/Layout';
 import '../styles/globals.css'; // Assuming you have or will create this for global styles
+import '../styles/kit.css'; // Assuming you have or will create this for global styles
+import { Inter } from 'next/font/google'
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter', // optional: useful for CSS variables
+})
+
 
 function MyApp({ Component, pageProps }) {
   const [isClient, setIsClient] = useState(false);
@@ -59,9 +67,11 @@ function MyApp({ Component, pageProps }) {
         {/* Prevent zoom on mobile forms */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </Head>
+      <div className={inter.className}>
       <AuthProvider>
         {getLayout(<Component {...pageProps} />)}
       </AuthProvider>
+      </div>
     </>
   );
 }

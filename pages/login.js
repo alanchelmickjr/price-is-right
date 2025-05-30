@@ -39,7 +39,7 @@ export default function LoginPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center relative overflow-hidden">
+      <div className="login-section">
         {/* Animated background elements */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-20 w-72 h-72 bg-violet-200 dark:bg-violet-900/50 rounded-full blur-3xl animate-pulse"></div>
@@ -48,47 +48,49 @@ export default function LoginPage() {
 
         {/* Main content */}
         <div className="relative z-10 w-full max-w-md mx-auto px-6">
-          <div className="neumorphic-card p-8">
+          <div className="login-wrapper">
             {/* Header */}
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto neumorphic-card rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-xl mb-4">
+            <div className="text-center mb-2">
+              {/* <div className="w-16 h-16 mx-auto neumorphic-card rounded-2xl flex items-center justify-center bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-xl mb-4">
                 <div className="text-white text-2xl">📱</div>
+              </div> */}
+              <div className='welcome-text-wrapper'>
+                <h1 className="Heading1">
+                  {mode === 'login' ? 'Welcome Back' : 'Create Your Account'}
+                </h1>
+                <p className="input-label">
+                  {mode === 'login' ? 'Sign in to Simply eBay' : 'Register for Simply eBay'}
+                </p>
               </div>
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                {mode === 'login' ? 'Welcome Back' : 'Create Your Account'}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                {mode === 'login' ? 'Sign in to Simply eBay' : 'Register for Simply eBay'}
-              </p>
             </div>
 
+             {/*wrapper to contain all Oauth buttons */}
+            <div className = "sign-up-wrapper">
             {/* eBay OAuth Login */}
-            <div className="mb-4">
-              <button
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#e53238] text-white font-semibold text-lg shadow hover:bg-[#b22222] transition"
-                onClick={() => window.location.href = '/api/auth/login?provider=ebay'}
-                style={{ marginBottom: '1rem' }}
-              >
-                <img src="/ebaygarage.png" alt="eBay" className="h-6 w-6" />
-                Sign in with eBay
-              </button>
+              <div className="">
+                <button
+                  className="sign-up-button"
+                  style={{marginBottom: 4}}
+                  onClick={() => window.location.href = '/api/auth/login?provider=ebay'}
+                >                Sign in with eBay
+                </button>
+                <AuthForm
+                  mode={mode}
+                  onSuccess={handleAuthSuccess}
+                  showOAuth={true}
+                />
+              </div>
+              {/* Auth Form */}
             </div>
-            {/* Auth Form */}
-            <AuthForm
-              mode={mode}
-              onSuccess={handleAuthSuccess}
-              showOAuth={true}
-            />
-
             {/* Toggle login/register link */}
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="input-label">
                 {mode === 'login' ? (
                   <>
                     Don't have an account?{' '}
                     <button
                       onClick={() => setMode('register')}
-                      className="text-violet-600 dark:text-violet-400 hover:underline font-medium"
+                      className="ghost-button"
                     >
                       Sign up
                     </button>
