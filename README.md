@@ -3,9 +3,7 @@
 > **⚡ Local AI. Instant Results. Zero Cloud Dependencies.**  
 > *Complete eBay listing workflow running entirely on your device.*
 
-## Alpha Version 0.11 - Working Alpha! 🎉
-
-## Alpha Version 0.10 - Under Development 🚧
+## Alpha Version 0.12 - Working Alpha! 🎉 New Contributor Paul Elite UI/UX
 
 ![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
 ![Gun.js](https://img.shields.io/badge/Gun.js-P2P_Database-FF6B6B?style=for-the-badge&logo=javascript)
