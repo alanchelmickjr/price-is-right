@@ -1137,8 +1137,10 @@
     <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1235/gun.js"></script>
     
     <script>
-        // Initialize Gun.js for local data storage
-        const gun = Gun();
+        // Initialize Gun.js with relay server for data persistence
+        const gun = Gun({
+            peers: ['http://localhost:8765/gun'] // Relay server
+        });
         const items = gun.get('ebay-items');
         
         // eBay API configuration - will be updated by setup wizard

@@ -25,6 +25,19 @@ fi
 
 echo "✅ Python found: $PYTHON_CMD"
 
+# Check for Node.js (needed for Gun.js relay)
+if ! command -v node &> /dev/null; then
+    echo "❌ Node.js not found. Installing Node.js for data persistence..."
+    if command -v brew &> /dev/null; then
+        brew install node
+    else
+        echo "❌ Please install Node.js manually from https://nodejs.org/"
+        echo "   Gun.js data persistence will be limited without relay server"
+    fi
+else
+    echo "✅ Node.js found"
+fi
+
 # Check for llama-server
 if ! command -v llama-server &> /dev/null; then
     echo "🤖 Setting up your personal AI assistant (this keeps you safe!)"
@@ -69,6 +82,31 @@ else
     AI_PORT=8080
 fi
 
+# Check Gun.js relay port
+if lsof -Pi :8765 -sTCP:LISTEN -t >/dev/null ; then
+    echo "⚠️  Port 8765 is already in use. Gun.js relay may conflict."
+    GUN_PORT=8766
+else
+    GUN_PORT=8765
+fi
+
+# Create temporary Gun.js relay server file
+echo "const Gun = require('gun');
+const server = require('http').createServer().listen($GUN_PORT);
+const gun = Gun({web: server});
+console.log('Gun.js relay server started on port $GUN_PORT');" > gun-relay.js
+
+# Install Gun.js if not available
+if ! npm list gun &> /dev/null; then
+    echo "📦 Installing Gun.js for data persistence..."
+    npm install gun --no-save &> /dev/null
+fi
+
+# Start Gun.js relay server
+echo "📦 Starting Gun.js relay server on port $GUN_PORT..."
+node gun-relay.js &
+GUN_PID=$!
+
 # Function to cleanup background processes
 cleanup() {
     echo ""
@@ -78,6 +116,10 @@ cleanup() {
     fi
     if [ ! -z "$AI_PID" ]; then
         kill $AI_PID 2>/dev/null
+    fi
+    if [ ! -z "$GUN_PID" ]; then
+        kill $GUN_PID 2>/dev/null
+        rm gun-relay.js 2>/dev/null
     fi
     exit 0
 }
@@ -159,6 +201,9 @@ echo ""
 echo "🎉 Servers started successfully!"
 echo "📱 Open your browser and go to:"
 echo "   👉 http://localhost:$WEB_PORT"
+echo ""
+echo "📦 Gun.js Relay: http://localhost:$GUN_PORT"
+echo "   Status: Data persistence enabled"
 echo ""
 if [ "$AI_SERVER" = true ]; then
     echo "🤖 AI Server: http://localhost:$AI_PORT"
