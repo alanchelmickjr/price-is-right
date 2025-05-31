@@ -253,36 +253,151 @@
             line-height: 1.4;
         }
 
-        .controls-panel {
-            background: var(--surface-bg);
-            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-            box-shadow: 0 -10px 20px var(--shadow-dark), 0 -5px 10px var(--shadow-light);
-            padding: var(--spacing-lg);
-            position: sticky;
-            bottom: 0;
-            transition: transform var(--transition-medium) ease, box-shadow var(--transition-medium) ease;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        /* Mattel-style Control Panel */
+        .control-panel {
+            position: fixed;
+            z-index: 1000;
+            display: flex;
+            gap: var(--spacing-md);
         }
 
-        .controls-panel:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 -12px 24px var(--shadow-dark), 0 -6px 12px var(--shadow-light);
+        /* Main scan button - bottom left */
+        .control-panel.main {
+            bottom: var(--spacing-lg);
+            left: var(--spacing-lg);
         }
 
-        .primary-button {
-            width: 100%;
-            height: var(--thumb-size);
+        /* Secondary controls - top right */
+        .control-panel.secondary {
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+        }
+
+        .control-btn {
             border: none;
-            border-radius: calc(var(--thumb-size) / 2);
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 50%;
+            background: var(--surface-bg);
+            box-shadow: 10px 10px 20px var(--shadow-dark),
+                       -10px -10px 20px var(--shadow-light),
+                       inset -2px -2px 4px var(--shadow-light),
+                       inset 2px 2px 4px var(--shadow-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: all var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
-            margin-bottom: var(--spacing-md);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            overflow: hidden;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Large scan button */
+        .control-btn.scan {
+            width: calc(var(--thumb-size) * 1.5);
+            height: calc(var(--thumb-size) * 1.5);
+            background: var(--success-color);
+            color: white;
+            font-size: 2rem;
+            cursor: move;
+            touch-action: none;
+        }
+
+        /* Small utility buttons */
+        .control-btn.utility {
+            width: calc(var(--thumb-size) * 0.8);
+            height: calc(var(--thumb-size) * 0.8);
+            font-size: 1.2rem;
+        }
+
+        .control-btn:active {
+            box-shadow: 5px 5px 10px var(--shadow-dark),
+                       -5px -5px 10px var(--shadow-light),
+                       inset -4px -4px 8px var(--shadow-dark),
+                       inset 4px 4px 8px var(--shadow-light);
+            transform: scale(0.95);
+        }
+
+        .control-btn.scan:active {
+            background: var(--warning-color);
+            cursor: grabbing;
+        }
+
+        /* Handle indicators for scan button */
+        .scan-handle {
+            position: absolute;
+            width: 25px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+        }
+
+        .scan-handle.top {
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .scan-handle.bottom {
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .fab-menu {
+            position: absolute;
+            bottom: calc(100% + var(--spacing-sm));
+            right: 0;
+            background: var(--surface-bg);
+            border-radius: var(--border-radius-md);
+            box-shadow: 8px 8px 16px var(--shadow-dark),
+                       -8px -8px 16px var(--shadow-light),
+                       inset -2px -2px 4px var(--shadow-light),
+                       inset 2px 2px 4px var(--shadow-dark);
+            padding: var(--spacing-sm);
+            display: none;
+            min-width: 200px;
+        }
+
+        .fab-menu.show {
+            display: block;
+            animation: slideUp var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Handle indicator for scan button */
+        .scan-handle {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 4px;
+            background: var(--surface-bg);
+            border-radius: 2px;
+            box-shadow: 2px 2px 4px var(--shadow-dark),
+                       -2px -2px 4px var(--shadow-light);
+        }
+
+        .fab-menu-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: var(--border-radius-sm);
+            transition: background var(--transition-fast) ease;
+        }
+
+        .fab-menu-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .fab-menu-item i {
+            margin-right: var(--spacing-sm);
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
         }
 
         .primary-button::after {
@@ -827,35 +942,46 @@
         </section>
     </main>
 
-    <footer class="controls-panel">
-        <button id="startButton" class="primary-button start">Start Scanning</button>
-        
-        <div class="settings-row">
-            <label class="settings-label">Scan Interval:</label>
-            <select id="intervalSelect" class="settings-input">
-                <option value="500">0.5s</option>
-                <option value="1000" selected>1s</option>
-                <option value="2000">2s</option>
-                <option value="3000">3s</option>
-            </select>
+    <!-- Main Scan Button - Bottom Left -->
+    <div class="control-panel main">
+        <button id="startButton" class="control-btn scan" title="Start/Stop Scanning">
+            💲
+            <div class="scan-handle top"></div>
+            <div class="scan-handle bottom"></div>
+        </button>
+    </div>
+
+    <!-- Settings & eBay - Top Right -->
+    <div class="control-panel secondary">
+        <!-- Settings Menu -->
+        <div class="fab-menu" id="settingsMenu">
+            <div class="fab-menu-item">
+                <i>⏱️</i>
+                <div style="flex: 1;">
+                    <label class="settings-label">Scan Interval</label>
+                    <select id="intervalSelect" class="settings-input" style="width: 100%; margin-top: 4px;">
+                        <option value="500">0.5s</option>
+                        <option value="1000" selected>1s</option>
+                        <option value="2000">2s</option>
+                        <option value="3000">3s</option>
+                    </select>
+                </div>
+            </div>
+            <div class="fab-menu-item">
+                <i>🔌</i>
+                <div style="flex: 1;">
+                    <label class="settings-label">API Server</label>
+                    <input id="baseURL" class="settings-input" value="http://localhost:8080" style="width: 100%; margin-top: 4px;">
+                </div>
+            </div>
         </div>
 
-        <div class="settings-row">
-            <label class="settings-label">API Server:</label>
-            <input id="baseURL" class="settings-input" value="http://localhost:8080" style="flex: 1; margin-left: 10px;">
-        </div>
-
-        <div class="settings-row">
-            <button id="setupEbayBtn" class="setup-button secondary" style="width: 100%; margin: 10px 0 0 0;">
-                ⚙️ Setup eBay API
-                <span id="ebayStatus" class="status-badge warning">Not Configured</span>
-            </button>
-        </div>
-
-        <div class="settings-row" style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 10px;">
-            💡 Need eBay pricing? Click "Setup eBay API" for real-time market data
-        </div>
-    </footer>
+        <button id="setupEbayBtn" class="control-btn utility" style="background: var(--warning-color); color: white;" title="Setup eBay">
+            🛍️
+            <span id="ebayStatus" class="status-badge warning" style="position: absolute; top: -2px; right: -2px; margin: 0; padding: 2px; font-size: 0.6rem;">!</span>
+        </button>
+        <button id="settingsBtn" class="control-btn utility" title="Settings">⚙️</button>
+    </div>
 
     <!-- Setup Modal -->
     <div id="setupModal" class="setup-modal" style="display: none;">
@@ -1203,15 +1329,26 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             const timestamp = Date.now();
             const sessionData = {
                 timestamp,
-                items,
+                itemCount: items.length,
                 sessionId: `scan_${timestamp}`
             };
             
-            // Store in Gun.js
-            gun.get('ebay-items').get(sessionData.sessionId).put(sessionData);
+            // Store session metadata
+            gun.get('ebay-sessions').get(sessionData.sessionId).put(sessionData);
             
-            // Also store recent items list
-            gun.get('recent-items').set(sessionData.sessionId);
+            // Store individual items
+            items.forEach((item, index) => {
+                const itemData = {
+                    ...item,
+                    sessionId: sessionData.sessionId,
+                    itemIndex: index,
+                    timestamp
+                };
+                gun.get('ebay-items').get(`${sessionData.sessionId}_${index}`).put(itemData);
+            });
+            
+            // Store recent session list
+            gun.get('recent-sessions').set(sessionData.sessionId);
         }
 
         // Load recent scanning sessions
@@ -1485,11 +1622,28 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             updateStatus('ready', 'Scanning stopped');
         }
 
+        // FAB Controls
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+
+        settingsBtn.addEventListener('click', () => {
+            settingsMenu.classList.toggle('show');
+        });
+
+        // Close settings menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!settingsBtn.contains(e.target) && !settingsMenu.contains(e.target)) {
+                settingsMenu.classList.remove('show');
+            }
+        });
+
         startButton.addEventListener('click', () => {
             if (isProcessing) {
                 handleStop();
+                startButton.innerHTML = '💲<div class="scan-handle top"></div><div class="scan-handle bottom"></div>';
             } else {
                 handleStart();
+                startButton.innerHTML = '⏹️<div class="scan-handle top"></div><div class="scan-handle bottom"></div>';
             }
         });
 
