@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Simply eBay - Point, Estimate, Post</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <style>
+        :root {
+            --primary-bg: #e6e7ee;
+            --surface-bg: #e6e7ee;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --accent-color: #4285f4;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --border-radius: 20px;
+            --thumb-size: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .app-header {
+            text-align: center;
+            padding: 20px;
+            background: var(--surface-bg);
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .app-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .camera-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 20px;
+            max-width: 100%;
+        }
+
+        .video-wrapper {
+            position: relative;
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+            overflow: hidden;
+            margin-bottom: 20px;
+            aspect-ratio: 4/3;
+        }
+
+        #videoFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .video-overlay.show {
+            transform: translateY(0);
+        }
+
+        .identified-items {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+
+        .items-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .item-card {
+            background: var(--surface-bg);
+            border-radius: 15px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--success-color); /* Default border */
+        }
+
+        .item-card.sellable-high {
+            border-left-color: var(--success-color); /* Green for high sellability */
+        }
+
+        .item-card.sellable-medium {
+            border-left-color: var(--warning-color); /* Orange for medium sellability */
+        }
+
+        .item-card.sellable-low {
+            border-left-color: #e53e3e; /* Red for low sellability */
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .controls-panel {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            box-shadow: 0 -8px 16px var(--shadow-dark);
+            padding: 20px;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .primary-button {
+            width: 100%;
+            height: var(--thumb-size);
+            border: none;
+            border-radius: calc(var(--thumb-size) / 2);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 15px;
+        }
+
+        .primary-button.start {
+            background: var(--surface-bg);
+            color: var(--success-color);
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+        }
+
+        .primary-button.start:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+        }
+
+        .primary-button.stop {
+            background: var(--warning-color);
+            color: white;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .settings-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .settings-input {
+            background: var(--surface-bg);
+            border: none;
+            border-radius: 15px;
+            padding: 8px 12px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-ready { background-color: var(--success-color); }
+        .status-processing { background-color: var(--warning-color); }
+        .status-error { background-color: #e53e3e; }
+
+        .sellable-high {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .sellable-medium {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .sellable-low {
+            border-left: 4px solid #e53e3e;
+        }
+
+        /* Setup Wizard Styles */
+        .setup-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .setup-card {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 20px 20px 40px var(--shadow-dark), -20px -20px 40px var(--shadow-light);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .setup-header {
+            padding: 20px 20px 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(163, 177, 198, 0.2);
+        }
+
+        .setup-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .setup-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .setup-content {
+            padding: 20px;
+        }
+
+        .setup-step {
+            display: none;
+        }
+
+        .setup-step.active {
+            display: block;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 600;
+            margin-right: 10px;
+            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+        }
+
+        .step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .setup-input {
+            width: 100%;
+            background: var(--surface-bg);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 15px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .setup-button {
+            background: var(--surface-bg);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 10px;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+        }
+
+        .setup-button:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+        }
+
+        .setup-button.primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .setup-button.secondary {
+            color: var(--text-secondary);
+        }
+
+        .setup-buttons {
+            text-align: right;
+            padding-top: 20px;
+            border-top: 1px solid rgba(163, 177, 198, 0.2);
+        }
+
+        .external-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .external-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-badge.success {
+            background: rgba(72, 187, 120, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-badge.error {
+            background: rgba(229, 62, 62, 0.2);
+            color: #e53e3e;
+        }
+
+        .status-badge.warning {
+            background: rgba(237, 137, 54, 0.2);
+            color: var(--warning-color);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(163, 177, 198, 0.3);
+            border-radius: 3px;
+            margin: 15px 0 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #5a9fd4);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 16.67%; /* 1/6 steps */
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--surface-bg);
+            border-radius: 12px;
+            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+            padding: 15px 20px;
+            max-width: 300px;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid #e53e3e;
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(66, 133, 244, 0.2);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-content h2 {
+            color: var(--accent-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .loading-content p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .loading-checklist {
+            text-align: left;
+        }
+
+        .loading-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .loading-icon {
+            width: 20px;
+            margin-right: 10px;
+            font-size: 0.8rem;
+        }
+
+        .loading-item.success .loading-icon {
+            color: var(--success-color);
+        }
+
+        .loading-item.error .loading-icon {
+            color: #e53e3e;
+        }
+
+        @media (min-width: 768px) {
+            .camera-container {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1 class="app-title">Simply eBay</h1>
+        <p class="app-subtitle">Point, Estimate, Post</p>
+    </header>
+
+    <main class="camera-container">
+        <div class="video-wrapper">
+            <video id="videoFeed" autoplay playsinline></video>
+            <div id="videoOverlay" class="video-overlay">
+                <div class="status-indicator status-ready"></div>
+                <span id="overlayText">Ready to scan</span>
+            </div>
+        </div>
+
+        <section class="identified-items">
+            <h2 class="items-header">Identified Items</h2>
+            <div id="itemsList">
+                <p style="color: var(--text-secondary); font-style: italic;">
+                    Start scanning to identify sellable items...
+                </p>
+            </div>
+        </section>
+
+        <section class="identified-items" id="historySection" style="display: none;">
+            <div class="settings-row" style="margin-bottom: 15px;">
+                <h2 class="items-header" style="margin: 0;">Recent Sessions</h2>
+                <button id="toggleHistoryBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer;">Show</button>
+            </div>
+            <div id="historyList">
+                <p style="color: var(--text-secondary); font-style: italic;">
+                    No recent scanning sessions...
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="controls-panel">
+        <button id="startButton" class="primary-button start">Start Scanning</button>
+        
+        <div class="settings-row">
+            <label class="settings-label">Scan Interval:</label>
+            <select id="intervalSelect" class="settings-input">
+                <option value="500">0.5s</option>
+                <option value="1000" selected>1s</option>
+                <option value="2000">2s</option>
+                <option value="3000">3s</option>
+            </select>
+        </div>
+
+        <div class="settings-row">
+            <label class="settings-label">API Server:</label>
+            <input id="baseURL" class="settings-input" value="http://localhost:8080" style="flex: 1; margin-left: 10px;">
+        </div>
+
+        <div class="settings-row">
+            <button id="setupEbayBtn" class="setup-button secondary" style="width: 100%; margin: 10px 0 0 0;">
+                ⚙️ Setup eBay API
+                <span id="ebayStatus" class="status-badge warning">Not Configured</span>
+            </button>
+        </div>
+
+        <div class="settings-row" style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 10px;">
+            💡 Need eBay pricing? Click "Setup eBay API" for real-time market data
+        </div>
+    </footer>
+
+    <!-- Setup Modal -->
+    <div id="setupModal" class="setup-modal" style="display: none;">
+        <div class="setup-card">
+            <div class="setup-header">
+                <h2 class="setup-title">eBay API Setup</h2>
+                <p class="setup-subtitle">Get real-time pricing for your items</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Step 1 of 6</p>
+            </div>
+            
+            <div class="setup-content">
+                <!-- Step 1: Welcome -->
+                <div class="setup-step active" data-step="1">
+                    <div class="step-title">
+                        <span class="step-number">1</span>
+                        Welcome to eBay Integration
+                    </div>
+                    <div class="step-description">
+                        To get real-time pricing for items you scan, you'll need eBay API credentials. This takes about 5 minutes and is completely free.
+                        <br><br>
+                        <strong>What you'll get:</strong>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Real eBay sold listing prices</li>
+                            <li>Market trend analysis</li>
+                            <li>Accurate item valuations</li>
+                        </ul>
+                        <br>
+                        Don't worry - we'll walk you through every step!
+                    </div>
+                </div>
+
+                <!-- Step 2: Create Account -->
+                <div class="setup-step" data-step="2">
+                    <div class="step-title">
+                        <span class="step-number">2</span>
+                        Create eBay Developer Account
+                    </div>
+                    <div class="step-description">
+                        First, you'll need an eBay Developer account (it's free!):
+                        <br><br>
+                        1. Click the button below to open eBay Developer Portal<br>
+                        2. Sign up with your eBay account (or create one)<br>
+                        3. Accept the developer terms<br>
+                        4. Come back here when done!
+                        <br><br>
+                        <a href="https://developer.ebay.com/" target="_blank" class="external-link">
+                            🔗 Open eBay Developer Portal
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Step 3: Create Application -->
+                <div class="setup-step" data-step="3">
+                    <div class="step-title">
+                        <span class="step-number">3</span>
+                        Create Your Application
+                    </div>
+                    <div class="step-description">
+                        Now create an application in your eBay Developer account:
+                        <br><br>
+                        1. In the developer portal, go to <strong>"My Account" → "Applications"</strong><br>
+                        2. Click <strong>"Create New Application"</strong><br>
+                        3. Fill in these details:<br>
+                        <div style="background: rgba(66, 133, 244, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                            <strong>Application Name:</strong> Simply eBay Scanner<br>
+                            <strong>Application Type:</strong> Public<br>
+                            <strong>Platform:</strong> Web<br>
+                            <strong>Description:</strong> Real-time eBay item identification and pricing tool
+                        </div>
+                        4. Submit the application<br>
+                        5. Come back here when you have your credentials!
+                    </div>
+                </div>
+
+                <!-- Step 4: Enter Credentials -->
+                <div class="setup-step" data-step="4">
+                    <div class="step-title">
+                        <span class="step-number">4</span>
+                        Enter Your Credentials
+                    </div>
+                    <div class="step-description">
+                        Copy your credentials from the eBay Developer Portal and paste them below:
+                        <br><br>
+                    </div>
+                    <input type="text" id="clientIdInput" class="setup-input" placeholder="Client ID (App ID)" />
+                    <input type="text" id="clientSecretInput" class="setup-input" placeholder="Client Secret (Cert ID)" />
+                    <div style="margin-top: 10px;">
+                        <label style="display: flex; align-items: center; color: var(--text-secondary);">
+                            <input type="checkbox" id="sandboxMode" checked style="margin-right: 8px;">
+                            Use Sandbox Mode (recommended for testing)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Step 5: Test Connection -->
+                <div class="setup-step" data-step="5">
+                    <div class="step-title">
+                        <span class="step-number">5</span>
+                        Test Connection
+                    </div>
+                    <div class="step-description">
+                        Let's test your eBay API connection:
+                        <br><br>
+                        <div id="connectionStatus" style="padding: 15px; border-radius: 10px; margin: 10px 0; background: rgba(237, 137, 54, 0.1);">
+                            Click "Test Connection" to verify your credentials work correctly.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Complete -->
+                <div class="setup-step" data-step="6">
+                    <div class="step-title">
+                        <span class="step-number">✓</span>
+                        Setup Complete!
+                    </div>
+                    <div class="step-description">
+                        🎉 Awesome! Your eBay API is now configured and working.
+                        <br><br>
+                        <strong>What's next:</strong>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Start scanning items with your camera</li>
+                            <li>Get real eBay pricing instantly</li>
+                            <li>See recent sold listings</li>
+                        </ul>
+                        <br>
+                        Your credentials are stored locally and never shared with anyone.
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-buttons">
+                <button id="setupPrevBtn" class="setup-button secondary" style="display: none;">← Previous</button>
+                <button id="setupNextBtn" class="setup-button primary">Get Started →</button>
+                <button id="setupTestBtn" class="setup-button primary" style="display: none;">Test Connection</button>
+                <button id="setupCloseBtn" class="setup-button primary" style="display: none;">Start Scanning!</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" class="hidden"></canvas>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>Simply eBay</h2>
+            <p id="loadingText">Loading dependencies...</p>
+            <div class="loading-checklist">
+                <div class="loading-item" id="checkBrowser">
+                    <span class="loading-icon">⏳</span>
+                    <span>Checking browser compatibility</span>
+                </div>
+                <div class="loading-item" id="checkCamera">
+                    <span class="loading-icon">⏳</span>
+                    <span>Initializing camera access</span>
+                </div>
+                <div class="loading-item" id="checkGun">
+                    <span class="loading-icon">⏳</span>
+                    <span>Loading local database</span>
+                </div>
+                <div class="loading-item" id="checkAI">
+                    <span class="loading-icon">⏳</span>
+                    <span>Connecting to AI server</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gun.js for local data persistence -->
+    <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1235/gun.js"></script>
+    
+    <script>
+        // Initialize Gun.js for local data storage
+        const gun = Gun();
+        const items = gun.get('ebay-items');
+        
+        // eBay API configuration - will be updated by setup wizard
+        const EBAY_CONFIG = {
+            clientId: localStorage.getItem('ebay_client_id') || 'your-ebay-client-id',
+            clientSecret: localStorage.getItem('ebay_client_secret') || 'your-ebay-client-secret',
+            sandbox: localStorage.getItem('ebay_sandbox') === 'true' || true,
+            get baseUrl() {
+                return this.sandbox ? 'https://api.sandbox.ebay.com' : 'https://api.ebay.com';
+            }
+        };
+
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('canvas');
+        const baseURL = document.getElementById('baseURL');
+        const intervalSelect = document.getElementById('intervalSelect');
+        const startButton = document.getElementById('startButton');
+        const itemsList = document.getElementById('itemsList');
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
+        const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+        const videoOverlay = document.getElementById('videoOverlay');
+        const overlayText = document.getElementById('overlayText');
+
+        // Setup wizard elements
+        const setupModal = document.getElementById('setupModal');
+        const setupEbayBtn = document.getElementById('setupEbayBtn');
+        const setupPrevBtn = document.getElementById('setupPrevBtn');
+        const setupNextBtn = document.getElementById('setupNextBtn');
+        const setupTestBtn = document.getElementById('setupTestBtn');
+        const setupCloseBtn = document.getElementById('setupCloseBtn');
+        const clientIdInput = document.getElementById('clientIdInput');
+        const clientSecretInput = document.getElementById('clientSecretInput');
+        const sandboxMode = document.getElementById('sandboxMode');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const ebayStatus = document.getElementById('ebayStatus');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        let stream;
+        let intervalId;
+        let isProcessing = false;
+        let currentSetupStep = 1;
+        let isEbayConfigured = false;
+
+        // eBay-focused instruction for AI
+        const EBAY_INSTRUCTION = `Identify sellable items in this image that would be good for eBay. For each item, provide:
+1. Item name
+2. Estimated condition (New, Like New, Good, Fair, Poor)
+3. Brief eBay-worthy description
+4. Estimated sellability (High/Medium/Low)
+
+Focus on: electronics, collectibles, furniture, tools, books, household items, antiques, sporting goods, and other items with resale value. Ignore items that are typically not worth selling (like common household consumables, damaged items, or items under $5 value).
+
+Format as: "ITEM: [name] | CONDITION: [condition] | DESCRIPTION: [description] | SELLABILITY: [High/Medium/Low]"`;
+
+        // eBay API token management
+        let ebayAccessToken = null;
+        let tokenExpiry = null;
+
+        // Get eBay OAuth access token
+        async function getEbayAccessToken() {
+            if (ebayAccessToken && tokenExpiry && Date.now() < tokenExpiry) {
+                return ebayAccessToken;
+            }
+
+            try {
+                const response = await fetch(`${EBAY_CONFIG.baseUrl}/identity/v1/oauth2/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': `Basic ${btoa(`${EBAY_CONFIG.clientId}:${EBAY_CONFIG.clientSecret}`)}`
+                    },
+                    body: 'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to get eBay token: ${response.status}`);
+                }
+
+                const data = await response.json();
+                ebayAccessToken = data.access_token;
+                tokenExpiry = Date.now() + (data.expires_in * 1000);
+                return ebayAccessToken;
+            } catch (error) {
+                console.error('Error getting eBay token:', error);
+                // Fall back to mock data if API fails
+                return null;
+            }
+        }
+
+        // Real eBay API function to fetch price estimates
+        async function fetchEbayPriceEstimate(itemName) {
+            console.log(`Fetching eBay data for: ${itemName}`);
+            
+            try {
+                const token = await getEbayAccessToken();
+                if (!token) {
+                    throw new Error('Could not obtain eBay access token');
+                }
+
+                // Search for completed listings to get price data
+                const searchUrl = `${EBAY_CONFIG.baseUrl}/buy/browse/v1/item_summary/search`;
+                const params = new URLSearchParams({
+                    q: itemName,
+                    limit: 20,
+                    filter: 'conditionIds:{3000|3500|4000|5000},deliveryCountry:US,soldListings:true',
+                    sort: 'price'
+                });
+
+                const response = await fetch(`${searchUrl}?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`eBay API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.itemSummaries || data.itemSummaries.length === 0) {
+                    throw new Error('No eBay listings found');
+                }
+
+                // Calculate average price from recent sold listings
+                const prices = data.itemSummaries
+                    .filter(item => item.price && item.price.value)
+                    .map(item => parseFloat(item.price.value));
+                
+                if (prices.length === 0) {
+                    throw new Error('No price data available');
+                }
+
+                const averagePrice = (prices.reduce((sum, price) => sum + price, 0) / prices.length).toFixed(2);
+                const currency = data.itemSummaries[0].price.currency || 'USD';
+                
+                return {
+                    averagePrice,
+                    currency,
+                    listingUrl: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(itemName)}&_sacat=0&LH_Sold=1`,
+                    sampleListings: data.itemSummaries.slice(0, 3).map(item => ({
+                        title: item.title,
+                        price: item.price.value,
+                        currency: item.price.currency,
+                        itemUrl: item.itemWebUrl
+                    }))
+                };
+            } catch (error) {
+                console.warn(`eBay API failed for ${itemName}, using mock data:`, error);
+                // Fall back to mock data
+                const mockPrice = (Math.random() * 100 + 10).toFixed(2);
+                return {
+                    averagePrice: mockPrice,
+                    currency: "USD",
+                    listingUrl: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(itemName)}`,
+                    isMockData: true
+                };
+            }
+        }
+
+        // Save identified items to local storage
+        function saveItemsLocally(items) {
+            const timestamp = Date.now();
+            const sessionData = {
+                timestamp,
+                items,
+                sessionId: `scan_${timestamp}`
+            };
+            
+            // Store in Gun.js
+            gun.get('ebay-items').get(sessionData.sessionId).put(sessionData);
+            
+            // Also store recent items list
+            gun.get('recent-items').set(sessionData.sessionId);
+        }
+
+        // Load recent scanning sessions
+        async function loadRecentSessions() {
+            return new Promise((resolve) => {
+                const sessions = [];
+                gun.get('recent-items').map().on((sessionId, key) => {
+                    if (sessionId) {
+                        gun.get('ebay-items').get(sessionId).once((sessionData) => {
+                            if (sessionData && sessionData.items) {
+                                sessions.push(sessionData);
+                            }
+                        });
+                    }
+                });
+                
+                // Give it a moment to load
+                setTimeout(() => resolve(sessions.sort((a, b) => b.timestamp - a.timestamp)), 1000);
+            });
+        }
+
+        async function sendChatCompletionRequest(instruction, imageBase64URL) {
+            try {
+                const response = await fetch(`${baseURL.value}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4-vision-preview",
+                        messages: [
+                            {
+                                role: "user",
+                                content: [
+                                    {
+                                        type: "text",
+                                        text: instruction
+                                    },
+                                    {
+                                        type: "image_url",
+                                        image_url: {
+                                            url: imageBase64URL
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        max_tokens: 500
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorData}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                throw new Error(`Request failed: ${error.message}`);
+            }
+        }
+
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }, 
+                    audio: false 
+                });
+                video.srcObject = stream;
+                updateStatus('ready', 'Camera ready - start scanning');
+                return true;
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                updateStatus('error', `Camera error: ${err.message}`);
+                throw err;
+            }
+        }
+
+        function updateStatus(type, message) {
+            const indicator = document.querySelector('.status-indicator');
+            indicator.className = `status-indicator status-${type}`;
+            overlayText.textContent = message;
+            videoOverlay.classList.toggle('show', type !== 'ready');
+        }
+
+        function captureImage() {
+            if (!stream || !video.videoWidth) {
+                console.warn("Video stream not ready for capture.");
+                return null;
+            }
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.7);
+        }
+
+        function parseAIResponse(response) {
+            const items = [];
+            const lines = response.split('\n');
+            
+            for (const line of lines) {
+                if (line.includes('ITEM:')) {
+                    const itemMatch = line.match(/ITEM:\s*([^|]+)/);
+                    const conditionMatch = line.match(/CONDITION:\s*([^|]+)/);
+                    const descriptionMatch = line.match(/DESCRIPTION:\s*([^|]+)/);
+                    const sellabilityMatch = line.match(/SELLABILITY:\s*([^|]+)/);
+                    
+                    if (itemMatch) {
+                        items.push({
+                            name: itemMatch[1].trim(),
+                            condition: conditionMatch ? conditionMatch[1].trim() : 'Unknown',
+                            description: descriptionMatch ? descriptionMatch[1].trim() : '',
+                            sellability: sellabilityMatch ? sellabilityMatch[1].trim() : 'Medium'
+                        });
+                    }
+                }
+            }
+            
+            return items;
+        }
+
+        function displayItems(items) {
+            if (items.length === 0) {
+                itemsList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No sellable items detected in current view...</p>';
+                return;
+            }
+
+            const itemsHTML = items.map(item => {
+                let borderColorClass = 'sellable-medium'; // Default for Medium or undefined
+                if (item.sellability) {
+                    switch (item.sellability.toLowerCase()) {
+                        case 'high':
+                            borderColorClass = 'sellable-high';
+                            break;
+                        case 'low':
+                            borderColorClass = 'sellable-low';
+                            break;
+                    }
+                }
+                
+                let priceInfo = '';
+                if (item.estimatedPrice) {
+                    const mockIndicator = item.isMockData ? ' (estimated)' : '';
+                    priceInfo = `<strong>Est. Price:</strong> $${item.estimatedPrice} ${item.currency}${mockIndicator} <a href="${item.listingUrl}" target="_blank">(eBay)</a><br>`;
+                    
+                    // Add sample listings if available
+                    if (item.sampleListings && item.sampleListings.length > 0) {
+                        priceInfo += '<strong>Recent Sales:</strong><br>';
+                        item.sampleListings.forEach(listing => {
+                            priceInfo += `• $${listing.price} - ${listing.title.substring(0, 40)}...<br>`;
+                        });
+                    }
+                }
+
+                return `
+                <div class="item-card ${borderColorClass}">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-details">
+                        <strong>Condition:</strong> ${item.condition}<br>
+                        <strong>Sellability:</strong> ${item.sellability}<br>
+                        ${priceInfo}
+                        ${item.description}
+                    </div>
+                </div>
+            `}).join('');
+
+            itemsList.innerHTML = itemsHTML;
+        }
+
+        async function scanForItems() {
+            if (!isProcessing) return;
+
+            updateStatus('processing', 'Scanning for items...');
+            
+            const imageBase64URL = captureImage();
+            if (!imageBase64URL) {
+                updateStatus('error', 'Failed to capture image');
+                return;
+            }
+
+            try {
+                const response = await sendChatCompletionRequest(EBAY_INSTRUCTION, imageBase64URL);
+                let items = parseAIResponse(response);
+
+                // Fetch price estimates for each item
+                for (let item of items) {
+                    try {
+                        const priceData = await fetchEbayPriceEstimate(item.name);
+                        item.estimatedPrice = priceData.averagePrice;
+                        item.currency = priceData.currency;
+                        item.listingUrl = priceData.listingUrl;
+                    } catch (priceError) {
+                        console.warn(`Could not fetch price for ${item.name}:`, priceError);
+                        item.estimatedPrice = null; // Or some other placeholder
+                    }
+                }
+
+                displayItems(items);
+                
+                // Save items to local storage
+                if (items.length > 0) {
+                    saveItemsLocally(items);
+                }
+                
+                updateStatus('ready', `Found ${items.length} sellable item${items.length !== 1 ? 's' : ''}`);
+            } catch (error) {
+                console.error('Scan error:', error);
+                updateStatus('error', `Scan failed: ${error.message}`);
+            }
+        }
+
+        function handleStart() {
+            if (!stream) {
+                alert('Camera not ready. Please ensure camera access is granted.');
+                return;
+            }
+            
+            isProcessing = true;
+            startButton.textContent = "Stop Scanning";
+            startButton.classList.remove('start');
+            startButton.classList.add('stop');
+            
+            intervalSelect.disabled = true;
+            baseURL.disabled = true;
+            
+            const intervalMs = parseInt(intervalSelect.value, 10);
+            scanForItems(); // Initial scan
+            intervalId = setInterval(scanForItems, intervalMs);
+        }
+
+        function handleStop() {
+            isProcessing = false;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            
+            startButton.textContent = "Start Scanning";
+            startButton.classList.remove('stop');
+            startButton.classList.add('start');
+            
+            intervalSelect.disabled = false;
+            baseURL.disabled = false;
+            
+            updateStatus('ready', 'Scanning stopped');
+        }
+
+        startButton.addEventListener('click', () => {
+            if (isProcessing) {
+                handleStop();
+            } else {
+                handleStart();
+            }
+        });
+
+        // History toggle functionality
+        let historyVisible = false;
+        toggleHistoryBtn.addEventListener('click', async () => {
+            historyVisible = !historyVisible;
+            if (historyVisible) {
+                historySection.style.display = 'block';
+                toggleHistoryBtn.textContent = 'Hide';
+                
+                // Load recent sessions
+                const sessions = await loadRecentSessions();
+                displayHistory(sessions);
+            } else {
+                historySection.style.display = 'none';
+                toggleHistoryBtn.textContent = 'Show';
+            }
+        });
+
+        function displayHistory(sessions) {
+            if (sessions.length === 0) {
+                historyList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No recent scanning sessions...</p>';
+                return;
+            }
+
+            const historyHTML = sessions.slice(0, 5).map(session => {
+                const date = new Date(session.timestamp).toLocaleDateString();
+                const time = new Date(session.timestamp).toLocaleTimeString();
+                const itemCount = session.items.length;
+                
+                return `
+                <div class="item-card" style="border-left-color: var(--accent-color);">
+                    <div class="item-name">${date} at ${time}</div>
+                    <div class="item-details">
+                        <strong>Items found:</strong> ${itemCount}<br>
+                        <strong>Items:</strong> ${session.items.map(item => item.name).join(', ').substring(0, 100)}${session.items.map(item => item.name).join(', ').length > 100 ? '...' : ''}
+                    </div>
+                </div>
+            `}).join('');
+
+            historyList.innerHTML = historyHTML;
+        }
+
+        // Setup Wizard Functions
+        function checkEbayConfiguration() {
+            const hasCredentials = EBAY_CONFIG.clientId !== 'your-ebay-client-id' && 
+                                 EBAY_CONFIG.clientSecret !== 'your-ebay-client-secret';
+            isEbayConfigured = hasCredentials;
+            
+            if (isEbayConfigured) {
+                ebayStatus.textContent = 'Configured';
+                ebayStatus.className = 'status-badge success';
+            } else {
+                ebayStatus.textContent = 'Not Configured';
+                ebayStatus.className = 'status-badge warning';
+            }
+        }
+
+        function showSetupModal() {
+            setupModal.style.display = 'flex';
+            currentSetupStep = 1;
+            showSetupStep(currentSetupStep);
+        }
+
+        function hideSetupModal() {
+            setupModal.style.display = 'none';
+        }
+
+        function showSetupStep(step) {
+            currentSetupStep = step;
+            
+            // Hide all steps
+            document.querySelectorAll('.setup-step').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show current step
+            document.querySelector(`[data-step="${step}"]`).classList.add('active');
+            
+            // Update progress bar
+            const progressPercent = (step / 6) * 100;
+            progressFill.style.width = `${progressPercent}%`;
+            progressText.textContent = `Step ${step} of 6`;
+            
+            // Update buttons
+            setupPrevBtn.style.display = step > 1 ? 'inline-block' : 'none';
+            setupNextBtn.style.display = step < 6 ? 'inline-block' : 'none';
+            setupTestBtn.style.display = step === 5 ? 'inline-block' : 'none';
+            setupCloseBtn.style.display = step === 6 ? 'inline-block' : 'none';
+            
+            // Update button text
+            if (step === 4) {
+                setupNextBtn.textContent = 'Save & Test →';
+            } else if (step < 6) {
+                setupNextBtn.textContent = step === 1 ? 'Get Started →' : 'Continue →';
+            }
+        }
+
+        function nextSetupStep() {
+            if (currentSetupStep === 4) {
+                // Save credentials
+                const clientId = clientIdInput.value.trim();
+                const clientSecret = clientSecretInput.value.trim();
+                const useSandbox = sandboxMode.checked;
+                
+                if (!clientId || !clientSecret) {
+                    alert('Please enter both Client ID and Client Secret');
+                    return;
+                }
+                
+                // Save to localStorage
+                localStorage.setItem('ebay_client_id', clientId);
+                localStorage.setItem('ebay_client_secret', clientSecret);
+                localStorage.setItem('ebay_sandbox', useSandbox.toString());
+                
+                // Update config
+                EBAY_CONFIG.clientId = clientId;
+                EBAY_CONFIG.clientSecret = clientSecret;
+                EBAY_CONFIG.sandbox = useSandbox;
+                
+                checkEbayConfiguration();
+                showNotification('eBay API credentials saved successfully!', 'success');
+            }
+            
+            if (currentSetupStep < 6) {
+                currentSetupStep++;
+                showSetupStep(currentSetupStep);
+            }
+        }
+
+        function prevSetupStep() {
+            if (currentSetupStep > 1) {
+                currentSetupStep--;
+                showSetupStep(currentSetupStep);
+            }
+        }
+
+        async function testEbayConnection() {
+            connectionStatus.innerHTML = '🔄 Testing connection...';
+            connectionStatus.style.background = 'rgba(237, 137, 54, 0.1)';
+            
+            try {
+                // Test with a simple search
+                const priceData = await fetchEbayPriceEstimate('iPhone');
+                
+                if (priceData && !priceData.isMockData) {
+                    connectionStatus.innerHTML = '✅ Connection successful! eBay API is working correctly.';
+                    connectionStatus.style.background = 'rgba(72, 187, 120, 0.1)';
+                    
+                    setTimeout(() => {
+                        currentSetupStep = 6;
+                        showSetupStep(currentSetupStep);
+                    }, 1500);
+                } else {
+                    throw new Error('API returned mock data');
+                }
+            } catch (error) {
+                connectionStatus.innerHTML = `❌ Connection failed: ${error.message}<br><br>Please check your credentials and try again.`;
+                connectionStatus.style.background = 'rgba(229, 62, 62, 0.1)';
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info', duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `<strong>${type.charAt(0).toUpperCase() + type.slice(1)}:</strong> ${message}`;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, duration);
+        }
+
+        // Loading screen management
+        const loadingScreen = document.getElementById('loadingScreen');
+        const loadingText = document.getElementById('loadingText');
+        
+        function updateLoadingItem(id, status, text = null) {
+            const item = document.getElementById(id);
+            const icon = item.querySelector('.loading-icon');
+            
+            switch(status) {
+                case 'success':
+                    icon.textContent = '✅';
+                    item.classList.add('success');
+                    break;
+                case 'error':
+                    icon.textContent = '❌';
+                    item.classList.add('error');
+                    break;
+                case 'loading':
+                    icon.textContent = '⏳';
+                    break;
+            }
+            
+            if (text) {
+                item.querySelector('span:last-child').textContent = text;
+            }
+        }
+
+        async function initializeApp() {
+            try {
+                // Check browser compatibility
+                updateLoadingItem('checkBrowser', 'loading');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    updateLoadingItem('checkBrowser', 'error', 'Camera API not supported');
+                    throw new Error('Browser not compatible');
+                }
+                updateLoadingItem('checkBrowser', 'success', 'Browser compatible');
+
+                // Check Gun.js loading
+                updateLoadingItem('checkGun', 'loading');
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                if (typeof Gun === 'undefined') {
+                    updateLoadingItem('checkGun', 'error', 'Failed to load Gun.js');
+                    throw new Error('Gun.js not loaded');
+                }
+                updateLoadingItem('checkGun', 'success', 'Local database ready');
+
+                // Initialize camera
+                updateLoadingItem('checkCamera', 'loading');
+                await initCamera();
+                updateLoadingItem('checkCamera', 'success', 'Camera initialized');
+
+                // Check AI server
+                updateLoadingItem('checkAI', 'loading');
+                try {
+                    const response = await fetch(`${baseURL.value}/health`, { 
+                        method: 'GET',
+                        timeout: 3000 
+                    });
+                    updateLoadingItem('checkAI', 'success', 'AI server connected');
+                } catch (error) {
+                    updateLoadingItem('checkAI', 'error', 'AI server offline (will try to connect)');
+                }
+
+                // All done
+                loadingText.textContent = 'Ready to start scanning!';
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                loadingScreen.classList.add('hidden');
+                checkEbayConfiguration();
+
+                // Auto-show setup if eBay not configured
+                if (!isEbayConfigured) {
+                    setTimeout(() => {
+                        showNotification('Click "Setup eBay API" to get real-time pricing!', 'info', 5000);
+                    }, 1000);
+                }
+
+            } catch (error) {
+                console.error('App initialization failed:', error);
+                loadingText.textContent = 'Setup completed with warnings - you can still use the app!';
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                    checkEbayConfiguration();
+                }, 2000);
+            }
+        }
+
+        // Setup Wizard event listeners
+        setupEbayBtn.addEventListener('click', showSetupModal);
+        setupNextBtn.addEventListener('click', nextSetupStep);
+        setupPrevBtn.addEventListener('click', prevSetupStep);
+        setupTestBtn.addEventListener('click', testEbayConnection);
+        setupCloseBtn.addEventListener('click', hideSetupModal);
+
+        // Close modal when clicking outside
+        setupModal.addEventListener('click', (e) => {
+            if (e.target === setupModal) {
+                hideSetupModal();
+            }
+        });
+
+        // Keyboard navigation for setup wizard
+        setupModal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideSetupModal();
+            } else if (e.key === 'Enter' && currentSetupStep === 5) {
+                testEbayConnection();
+            }
+        });
+
+        // Enter key on credential inputs
+        clientIdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                clientSecretInput.focus();
+            }
+        });
+
+        clientSecretInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                nextSetupStep();
+            }
+        });
+
+        // Pre-fill credentials if they exist
+        if (localStorage.getItem('ebay_client_id')) {
+            clientIdInput.value = localStorage.getItem('ebay_client_id');
+        }
+        if (localStorage.getItem('ebay_client_secret')) {
+            clientSecretInput.value = localStorage.getItem('ebay_client_secret');
+        }
+        if (localStorage.getItem('ebay_sandbox')) {
+            sandboxMode.checked = localStorage.getItem('ebay_sandbox') === 'true';
+        }
+
+        // Initialize the app
+        async function initApp() {
+            await initCamera();
+            checkEbayConfiguration();
+            
+            // Show setup modal if eBay is not configured
+            if (!isEbayConfigured) {
+                setTimeout(() => {
+                    showSetupModal();
+                }, 1000);
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', initApp);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        });
+
+        // PWA installation prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            deferredPrompt = e;
+        });
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
