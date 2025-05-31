@@ -1,8 +1,6 @@
 # Simply eBay - Local-First AI eBay Assistant
 ⚡ **Local AI. Instant Results. Zero Cloud Dependencies.**
 
-![demo](https://alanchelmickjr.github.io/price-is-right/)
-
 **Transform garage sale prep into a 2-minute magic trick.** Point your camera, get instant AI pricing, and list to eBay – all while keeping your data private and processing everything locally.
 
 **Alpha Version 0.4 - Enhanced UI & Session Management!** 🎉 **New: Art Deco Dashboard & Sticky Items**
