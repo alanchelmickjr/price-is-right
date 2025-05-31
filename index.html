@@ -6,7 +6,9 @@
     <title>Simply eBay - Point, Estimate, Post</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
     <meta name="theme-color" content="#4285f4">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
@@ -99,51 +101,14 @@
             transform: scale(0.98);
         }
 
-        .app-header {
-            text-align: center;
-            padding: var(--spacing-lg);
-            background: var(--surface-bg);
-            box-shadow: var(--shadow-inset);
-            border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
-            margin-bottom: var(--spacing-lg);
-            animation: slideUp var(--transition-medium) ease;
-        }
-
-        .app-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 5px;
-        }
-
-        .app-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 400;
-        }
 
         .camera-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 0 var(--spacing-lg);
+            padding: 0 var(--spacing-md);
             max-width: 100%;
             animation: fadeIn var(--transition-slow) ease;
-        }
-
-        .video-wrapper {
-            position: relative;
-            background: var(--surface-bg);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-large);
-            overflow: hidden;
-            margin-bottom: var(--spacing-lg);
-            aspect-ratio: 4/3;
-            transition: transform var(--transition-medium) ease;
-        }
-
-        .video-wrapper:hover {
-            transform: translateY(-2px);
         }
 
         #videoFeed {
@@ -253,97 +218,6 @@
             line-height: 1.4;
         }
 
-        /* Mattel-style Control Panel */
-        .control-panel {
-            position: fixed;
-            z-index: 1000;
-            display: flex;
-            gap: var(--spacing-md);
-        }
-
-        /* Main scan button - bottom left */
-        .control-panel.main {
-            bottom: var(--spacing-lg);
-            left: var(--spacing-lg);
-        }
-
-        /* Secondary controls - top right */
-        .control-panel.secondary {
-            top: var(--spacing-lg);
-            right: var(--spacing-lg);
-        }
-
-        .control-btn {
-            border: none;
-            border-radius: 50%;
-            background: var(--surface-bg);
-            box-shadow: 10px 10px 20px var(--shadow-dark),
-                       -10px -10px 20px var(--shadow-light),
-                       inset -2px -2px 4px var(--shadow-light),
-                       inset 2px 2px 4px var(--shadow-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            font-size: 1.2rem;
-            color: var(--text-primary);
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Large scan button */
-        .control-btn.scan {
-            width: calc(var(--thumb-size) * 1.5);
-            height: calc(var(--thumb-size) * 1.5);
-            background: var(--success-color);
-            color: white;
-            font-size: 2rem;
-            cursor: move;
-            touch-action: none;
-        }
-
-        /* Small utility buttons */
-        .control-btn.utility {
-            width: calc(var(--thumb-size) * 0.8);
-            height: calc(var(--thumb-size) * 0.8);
-            font-size: 1.2rem;
-        }
-
-        .control-btn:active {
-            box-shadow: 5px 5px 10px var(--shadow-dark),
-                       -5px -5px 10px var(--shadow-light),
-                       inset -4px -4px 8px var(--shadow-dark),
-                       inset 4px 4px 8px var(--shadow-light);
-            transform: scale(0.95);
-        }
-
-        .control-btn.scan:active {
-            background: var(--warning-color);
-            cursor: grabbing;
-        }
-
-        /* Handle indicators for scan button */
-        .scan-handle {
-            position: absolute;
-            width: 25px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 2px;
-        }
-
-        .scan-handle.top {
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .scan-handle.bottom {
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
 
         .fab-menu {
             position: absolute;
@@ -365,18 +239,117 @@
             animation: slideUp var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Handle indicator for scan button */
-        .scan-handle {
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 4px;
+
+        /* Utility controls bottom right */
+        .utility-controls {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
+            display: flex;
+            gap: var(--spacing-sm);
+            z-index: 100;
+        }
+
+        .control-btn {
+            border: none;
+            border-radius: 50%;
             background: var(--surface-bg);
-            border-radius: 2px;
-            box-shadow: 2px 2px 4px var(--shadow-dark),
-                       -2px -2px 4px var(--shadow-light);
+            box-shadow: inset 3px 3px 6px var(--shadow-dark),
+                       inset -3px -3px 6px var(--shadow-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            width: calc(var(--thumb-size) * 0.7);
+            height: calc(var(--thumb-size) * 0.7);
+        }
+
+        /* Utility controls bottom right */
+        .utility-controls {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
+            display: flex;
+            gap: var(--spacing-sm);
+            z-index: 100;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+            box-shadow: inset 4px 4px 8px var(--shadow-dark),
+                       inset -4px -4px 8px var(--shadow-light);
+        }
+
+        /* Remove any background elements from eBay button */
+        .control-btn .status-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            margin: 0;
+            padding: 2px 4px;
+            font-size: 0.5rem;
+            border-radius: 50%;
+            background: var(--warning-color);
+            color: white;
+            box-shadow: 1px 1px 2px var(--shadow-dark);
+        }
+
+        /* Inset Camera View */
+        .video-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: var(--border-radius-md);
+            box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.3),
+                       inset -6px -6px 12px rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            margin: var(--spacing-sm);
+            aspect-ratio: 4/3;
+            border: 2px solid var(--surface-bg);
+        }
+
+        /* Art Deco Frame */
+        .dashboard-frame {
+            position: absolute;
+            top: var(--spacing-sm);
+            left: var(--spacing-sm);
+            right: var(--spacing-sm);
+            bottom: var(--spacing-sm);
+            border: 4px solid var(--surface-bg);
+            border-radius: var(--border-radius-md);
+            box-shadow: inset 0 0 0 1px var(--shadow-dark);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Large scan button - separate from dashboard */
+        .control-btn.scan {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            left: var(--spacing-lg);
+            width: calc(var(--thumb-size) * 1.3);
+            height: calc(var(--thumb-size) * 1.3);
+            background: var(--success-color);
+            color: white;
+            font-size: 1.8rem;
+            z-index: 100;
+            border-radius: 50%;
+            box-shadow: 6px 6px 12px var(--shadow-dark),
+                       -6px -6px 12px var(--shadow-light),
+                       inset -2px -2px 4px var(--shadow-light),
+                       inset 2px 2px 4px var(--shadow-dark);
+        }
+
+        .control-btn.scan:active {
+            transform: scale(0.95);
+            box-shadow: 3px 3px 6px var(--shadow-dark),
+                       -3px -3px 6px var(--shadow-light),
+                       inset -4px -4px 8px var(--shadow-dark),
+                       inset 4px 4px 8px var(--shadow-light);
+            background: var(--warning-color);
         }
 
         .fab-menu-item {
@@ -886,14 +859,28 @@
     </style>
 </head>
 <body>
-    <header class="app-header">
-        <h1 class="app-title">Simply eBay</h1>
-        <p class="app-subtitle">Point, Estimate, Post</p>
-    </header>
+    <!-- Scan button bottom left -->
+    <button id="startButton" class="control-btn scan" title="Start/Stop Scanning">
+        💲
+        <div class="scan-handle top"></div>
+        <div class="scan-handle bottom"></div>
+    </button>
+    
+    <!-- Utility buttons bottom right -->
+    <div class="utility-controls">
+        <button id="rotateBtn" class="control-btn utility" title="Rotate Camera View">📱</button>
+        <button id="llamaBtn" class="control-btn utility" title="Open Llama Chat">🦙</button>
+        <button id="settingsBtn" class="control-btn utility" title="Settings">⚙️</button>
+        <button id="setupEbayBtn" class="control-btn utility" style="background: var(--warning-color); color: white;" title="Setup eBay">
+            🛍️
+            <span id="ebayStatus" class="status-badge warning" style="position: absolute; top: -2px; right: -2px; margin: 0; padding: 2px; font-size: 0.6rem;">!</span>
+        </button>
+    </div>
 
     <main class="camera-container">
         <div class="video-wrapper">
             <video id="videoFeed" autoplay playsinline></video>
+            <div class="dashboard-frame"></div>
             <div id="videoOverlay" class="video-overlay">
                 <div class="status-indicator status-ready"></div>
                 <span id="overlayText">Ready to scan</span>
@@ -942,45 +929,27 @@
         </section>
     </main>
 
-    <!-- Main Scan Button - Bottom Left -->
-    <div class="control-panel main">
-        <button id="startButton" class="control-btn scan" title="Start/Stop Scanning">
-            💲
-            <div class="scan-handle top"></div>
-            <div class="scan-handle bottom"></div>
-        </button>
-    </div>
-
-    <!-- Settings & eBay - Top Right -->
-    <div class="control-panel secondary">
-        <!-- Settings Menu -->
-        <div class="fab-menu" id="settingsMenu">
-            <div class="fab-menu-item">
-                <i>⏱️</i>
-                <div style="flex: 1;">
-                    <label class="settings-label">Scan Interval</label>
-                    <select id="intervalSelect" class="settings-input" style="width: 100%; margin-top: 4px;">
-                        <option value="500">0.5s</option>
-                        <option value="1000" selected>1s</option>
-                        <option value="2000">2s</option>
-                        <option value="3000">3s</option>
-                    </select>
-                </div>
-            </div>
-            <div class="fab-menu-item">
-                <i>🔌</i>
-                <div style="flex: 1;">
-                    <label class="settings-label">API Server</label>
-                    <input id="baseURL" class="settings-input" value="http://localhost:8080" style="width: 100%; margin-top: 4px;">
-                </div>
+    <!-- Settings Menu -->
+    <div class="fab-menu" id="settingsMenu" style="position: fixed; top: 120px; right: var(--spacing-lg); z-index: 1001;">
+        <div class="fab-menu-item">
+            <i>⏱️</i>
+            <div style="flex: 1;">
+                <label class="settings-label">Scan Interval</label>
+                <select id="intervalSelect" class="settings-input" style="width: 100%; margin-top: 4px;">
+                    <option value="1000">1s</option>
+                    <option value="2000" selected>2s (Default)</option>
+                    <option value="3000">3s</option>
+                    <option value="5000">5s</option>
+                </select>
             </div>
         </div>
-
-        <button id="setupEbayBtn" class="control-btn utility" style="background: var(--warning-color); color: white;" title="Setup eBay">
-            🛍️
-            <span id="ebayStatus" class="status-badge warning" style="position: absolute; top: -2px; right: -2px; margin: 0; padding: 2px; font-size: 0.6rem;">!</span>
-        </button>
-        <button id="settingsBtn" class="control-btn utility" title="Settings">⚙️</button>
+        <div class="fab-menu-item">
+            <i>🔌</i>
+            <div style="flex: 1;">
+                <label class="settings-label">API Server</label>
+                <input id="baseURL" class="settings-input" value="http://localhost:8080" style="width: 100%; margin-top: 4px;">
+            </div>
+        </div>
     </div>
 
     <!-- Setup Modal -->
@@ -1414,11 +1383,13 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
 
         async function initCamera() {
             try {
+                // Start with portrait constraints
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { 
                         facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        aspectRatio: { ideal: 0.75 }, // 3:4 portrait ratio
+                        width: { ideal: 720 },
+                        height: { ideal: 1280 }
                     }, 
                     audio: false 
                 });
@@ -1430,6 +1401,34 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                 updateStatus('error', `Camera error: ${err.message}`);
                 throw err;
             }
+        }
+
+        // Camera rotation handler
+        function setupCameraRotation() {
+            const wrapper = document.querySelector('.video-wrapper');
+            let isPortrait = true; // Start in portrait mode
+            
+            // Set initial portrait mode
+            wrapper.style.aspectRatio = '3/4';
+            
+            document.getElementById('rotateBtn').addEventListener('click', async () => {
+                isPortrait = !isPortrait;
+                
+                // Get current track
+                const track = stream.getVideoTracks()[0];
+                
+                // Apply new constraints
+                try {
+                    await track.applyConstraints({
+                        aspectRatio: isPortrait ? 0.75 : 1.33333 // 3:4 or 4:3
+                    });
+                    
+                    // Update wrapper aspect ratio
+                    wrapper.style.aspectRatio = isPortrait ? '3/4' : '4/3';
+                } catch (err) {
+                    console.error('Failed to change aspect ratio:', err);
+                }
+            });
         }
 
         function updateStatus(type, message) {
@@ -1973,10 +1972,20 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             sandboxMode.checked = localStorage.getItem('ebay_sandbox') === 'true';
         }
 
+
+        // Llama chat handler
+        function setupLlamaChat() {
+            document.getElementById('llamaBtn').addEventListener('click', () => {
+                window.open('http://localhost:8080', '_blank');
+            });
+        }
+
         // Initialize the app
         async function initApp() {
             await initCamera();
             checkEbayConfiguration();
+            setupCameraRotation();
+            setupLlamaChat();
             
             // Show setup modal if eBay is not configured
             if (!isEbayConfigured) {
