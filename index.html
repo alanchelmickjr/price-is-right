@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Simply eBay - Point, Estimate, Post</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
     <meta name="theme-color" content="#4285f4">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -785,6 +786,26 @@
         </div>
 
         <section class="identified-items">
+            <h2 class="items-header">AI Raw Output</h2>
+            <div id="rawOutput" style="
+                background: var(--surface-bg);
+                border-radius: var(--border-radius-sm);
+                box-shadow: var(--shadow-inset);
+                padding: var(--spacing-md);
+                margin-bottom: var(--spacing-md);
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                font-size: 0.8rem;
+                line-height: 1.4;
+                color: var(--text-secondary);
+                white-space: pre-wrap;
+                max-height: 200px;
+                overflow-y: auto;
+            ">
+                AI responses will appear here...
+            </div>
+        </section>
+
+        <section class="identified-items">
             <h2 class="items-header">Identified Items</h2>
             <div id="itemsList">
                 <p style="color: var(--text-secondary); font-style: italic;">
@@ -1057,16 +1078,18 @@
         let currentSetupStep = 1;
         let isEbayConfigured = false;
 
-        // eBay-focused instruction for AI
-        const EBAY_INSTRUCTION = `Identify sellable items in this image that would be good for eBay. For each item, provide:
-1. Item name
-2. Estimated condition (New, Like New, Good, Fair, Poor)
-3. Brief eBay-worthy description
-4. Estimated sellability (High/Medium/Low)
+        // Simplified instruction for better detection
+        const EBAY_INSTRUCTION = `Look at this image and identify any objects that could be sold on eBay. 
 
-Focus on: electronics, collectibles, furniture, tools, books, household items, antiques, sporting goods, and other items with resale value. Ignore items that are typically not worth selling (like common household consumables, damaged items, or items under $5 value).
+For each item you see, respond with this exact format:
+ITEM: [item name] | CONDITION: [New/Used/Good/Fair] | DESCRIPTION: [brief description] | SELLABILITY: [High/Medium/Low]
 
-Format as: "ITEM: [name] | CONDITION: [condition] | DESCRIPTION: [description] | SELLABILITY: [High/Medium/Low]"`;
+Examples:
+ITEM: Apple MacBook Pro | CONDITION: Good | DESCRIPTION: Silver laptop computer | SELLABILITY: High
+ITEM: Wooden desk | CONDITION: Used | DESCRIPTION: Brown wooden office desk | SELLABILITY: Medium
+ITEM: Computer keyboard | CONDITION: Good | DESCRIPTION: White wireless keyboard | SELLABILITY: Medium
+
+Focus on visible objects like electronics, furniture, books, tools, collectibles, or household items. Ignore walls, floors, and items clearly not for sale.`;
 
         // eBay API token management
         let ebayAccessToken = null;
@@ -1292,6 +1315,9 @@ Format as: "ITEM: [name] | CONDITION: [condition] | DESCRIPTION: [description] |
         }
 
         function parseAIResponse(response) {
+            // Show raw output for debugging
+            document.getElementById('rawOutput').textContent = response;
+            
             const items = [];
             const lines = response.split('\n');
             
@@ -1308,6 +1334,23 @@ Format as: "ITEM: [name] | CONDITION: [condition] | DESCRIPTION: [description] |
                             condition: conditionMatch ? conditionMatch[1].trim() : 'Unknown',
                             description: descriptionMatch ? descriptionMatch[1].trim() : '',
                             sellability: sellabilityMatch ? sellabilityMatch[1].trim() : 'Medium'
+                        });
+                    }
+                }
+            }
+            
+            // If no structured items found, try to extract any mentioned objects
+            if (items.length === 0) {
+                // Look for common object words in the response
+                const objectWords = ['keyboard', 'mouse', 'laptop', 'computer', 'desk', 'chair', 'book', 'phone', 'tablet', 'monitor', 'screen', 'cable', 'charger', 'headphones', 'speaker', 'camera', 'watch', 'pen', 'notebook', 'cup', 'mug', 'bottle', 'lamp', 'clock'];
+                
+                for (const word of objectWords) {
+                    if (response.toLowerCase().includes(word)) {
+                        items.push({
+                            name: word.charAt(0).toUpperCase() + word.slice(1),
+                            condition: 'Unknown',
+                            description: 'Detected in image',
+                            sellability: 'Medium'
                         });
                     }
                 }
@@ -1680,136 +1723,29 @@ Format as: "ITEM: [name] | CONDITION: [condition] | DESCRIPTION: [description] |
                 await initCamera();
                 updateLoadingItem('checkCamera', 'success', 'Camera initialized');
 
-                // Check and setup AI server with user-friendly messages
-                updateLoadingItem('checkAI', 'loading', '🔍 Checking for your personal AI model...');
-                
-                let aiConnected = false;
-                const maxRetries = 180; // 3 minutes total for first-time setup
-                let retryCount = 0;
-                let downloadStarted = false;
-                
-                // Update loading screen with first-time setup message
-                if (!localStorage.getItem('model_downloaded')) {
-                    const isMobile = isMobileDevice();
-                    loadingText.innerHTML = `
-                        <strong style="font-size: 1.2em; color: var(--accent-color);">
-                            ${isMobile ? '📱 Setting Up Your Mobile AI Assistant' : 'Setting Up Your Personal AI Assistant'}
-                        </strong>
-                        <p style="margin: 15px 0; line-height: 1.5;">
-                            For your privacy and security, Simply eBay uses a local AI model that runs entirely on your ${isMobile ? 'phone' : 'device'}.
-                            <br><br>
-                            <strong>First-time setup:</strong>
-                            <br>
-                            • Downloading your personal AI model
-                            <br>
-                            • This happens only once
-                            <br>
-                            • Takes about ${isMobile ? '3-5 minutes on mobile' : '2-3 minutes on fast internet'}
-                            <br>
-                            ${isMobile ? '• Works offline after download!' : ''}
-                            <br><br>
-                            Please keep this ${isMobile ? 'app' : 'tab'} open...
-                        </p>
-                    `;
-                }
-                
-                while (!aiConnected && retryCount < maxRetries) {
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 2000);
-                        
-                        const response = await fetch(`${baseURL.value}/health`, { 
-                            method: 'GET',
-                            signal: controller.signal
-                        });
-                        
-                        clearTimeout(timeoutId);
-                        
-                        if (response.ok) {
-                            updateLoadingItem('checkAI', 'success', '✨ AI model ready!');
-                            aiConnected = true;
-                            localStorage.setItem('model_downloaded', 'true');
-                            
-                            // Show success message for first-time setup
-                            if (!downloadStarted) {
-                                showNotification('Your personal AI model is ready! You won\'t need to download it again.', 'success', 5000);
-                            }
-                        } else {
-                            throw new Error('Still preparing...');
-                        }
-                    } catch (error) {
-                        retryCount++;
-                        
-                        // First-time setup progress messages
-                        if (!downloadStarted && retryCount === 1) {
-                            downloadStarted = true;
-                            updateLoadingItem('checkAI', 'loading', '📥 Downloading your personal AI model...');
-                        } else if (retryCount < 30) {
-                            updateLoadingItem('checkAI', 'loading', '🚀 Starting download... (one-time setup)');
-                        } else if (retryCount < 90) {
-                            const progress = Math.min(Math.floor((retryCount - 30) * 1.7), 100);
-                            updateLoadingItem('checkAI', 'loading', `📦 Downloading model: ~${progress}%`);
-                        } else if (retryCount < 150) {
-                            updateLoadingItem('checkAI', 'loading', '⚡ Preparing AI model...');
-                        } else {
-                            updateLoadingItem('checkAI', 'loading', '🔄 Almost ready...');
-                        }
-                        
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                // Check AI server connection (quick check, don't block loading)
+                updateLoadingItem('checkAI', 'loading');
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    
+                    const response = await fetch(`${baseURL.value}/health`, { 
+                        method: 'GET',
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        updateLoadingItem('checkAI', 'success', 'AI server connected');
+                        showNotification('AI server ready for scanning!', 'success', 3000);
+                    } else {
+                        throw new Error('Server not ready');
                     }
-                }
-                
-                if (!aiConnected) {
-                    updateLoadingItem('checkAI', 'error', '❌ AI setup needs attention');
-                    console.warn('AI server setup incomplete after 3 minutes');
-                    
-                    // Show detailed help message with action buttons
-                    loadingText.innerHTML = `
-                        <strong style="color: #e53e3e; font-size: 1.2em;">AI Setup Needs Attention</strong>
-                        <p style="margin: 15px 0; line-height: 1.5;">
-                            Don't worry! This is usually an easy fix. Here's what to do:
-                            <br><br>
-                            1. Make sure you have <strong>llama.cpp</strong> installed:
-                            <br>
-                            • On Mac: <code style="background: rgba(66,133,244,0.1); padding: 2px 6px; border-radius: 4px;">brew install llama.cpp</code>
-                            <br>
-                            • On Windows: Download from GitHub
-                            <br><br>
-                            2. Then just refresh this page!
-                        </p>
-                        <div style="margin-top: 20px; text-align: center;">
-                            <button onclick="window.open('SETUP.md', '_blank')" style="
-                                background: var(--accent-color);
-                                color: white;
-                                border: none;
-                                padding: 12px 24px;
-                                border-radius: 25px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                margin: 0 10px;
-                                box-shadow: 0 4px 12px rgba(66,133,244,0.3);
-                                font-size: 1.1em;
-                            ">📖 Quick Setup Guide</button>
-                            <button onclick="window.location.reload()" style="
-                                background: var(--surface-bg);
-                                color: var(--text-primary);
-                                border: none;
-                                padding: 12px 24px;
-                                border-radius: 25px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                margin: 0 10px;
-                                box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-                            ">🔄 Retry Connection</button>
-                        </div>
-                        <p style="margin-top: 20px; color: var(--text-secondary); font-size: 0.9em; text-align: center;">
-                            Simply eBay requires local AI to protect your privacy and data.
-                            <br>
-                            Installation takes just a minute!
-                        </p>
-                    `;
-                    
-                    showNotification('AI setup required. Please follow the setup guide to install llama.cpp.', 'error', 10000);
+                } catch (error) {
+                    updateLoadingItem('checkAI', 'error', 'AI server offline (app still works)');
+                    console.warn('AI server not available:', error);
+                    showNotification('AI server offline - you can still use the app and set up eBay integration!', 'info', 5000);
                 }
 
                 // All done
