@@ -10,23 +10,68 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <style>
         :root {
-            --primary-bg: #e6e7ee;
-            --surface-bg: #e6e7ee;
+            /* Enhanced Color Palette */
+            --primary-bg: #e6e9ef;
+            --surface-bg: #e6e9ef;
             --text-primary: #2d3748;
-            --text-secondary: #718096;
+            --text-secondary: #5a6c86;
             --accent-color: #4285f4;
-            --success-color: #48bb78;
+            --success-color: #38b2ac;
             --warning-color: #ed8936;
+            
+            /* Refined Shadows */
             --shadow-light: #ffffff;
             --shadow-dark: #a3b1c6;
-            --border-radius: 20px;
+            --shadow-soft: rgba(163, 177, 198, 0.3);
+            
+            /* Enhanced Neumorphic Effects */
+            --shadow-small: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+            --shadow-medium: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            --shadow-large: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+            --shadow-inset: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            
+            /* Refined Measurements */
+            --border-radius-sm: 12px;
+            --border-radius-md: 20px;
+            --border-radius-lg: 30px;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
             --thumb-size: 60px;
+            
+            /* Animation Timings */
+            --transition-fast: 0.2s;
+            --transition-medium: 0.3s;
+            --transition-slow: 0.5s;
+        }
+
+        /* Global Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            transition: all var(--transition-fast) ease;
+        }
+
+        *:focus {
+            outline: none;
         }
 
         body {
@@ -37,15 +82,30 @@
             display: flex;
             flex-direction: column;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            line-height: 1.5;
+            letter-spacing: 0.01em;
+        }
+
+        /* Enhanced Button Styles */
+        button {
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            transition: all var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         .app-header {
             text-align: center;
-            padding: 20px;
+            padding: var(--spacing-lg);
             background: var(--surface-bg);
-            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
-            border-radius: 0 0 var(--border-radius) var(--border-radius);
-            margin-bottom: 20px;
+            box-shadow: var(--shadow-inset);
+            border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+            margin-bottom: var(--spacing-lg);
+            animation: slideUp var(--transition-medium) ease;
         }
 
         .app-title {
@@ -65,18 +125,24 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 0 20px;
+            padding: 0 var(--spacing-lg);
             max-width: 100%;
+            animation: fadeIn var(--transition-slow) ease;
         }
 
         .video-wrapper {
             position: relative;
             background: var(--surface-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-large);
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-lg);
             aspect-ratio: 4/3;
+            transition: transform var(--transition-medium) ease;
+        }
+
+        .video-wrapper:hover {
+            transform: translateY(-2px);
         }
 
         #videoFeed {
@@ -88,28 +154,37 @@
 
         .video-overlay {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            padding: 10px;
-            backdrop-filter: blur(10px);
+            top: var(--spacing-md);
+            left: var(--spacing-md);
+            right: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            backdrop-filter: blur(15px);
             transform: translateY(-100%);
-            transition: transform 0.3s ease;
+            transition: all var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-medium);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .video-overlay.show {
             transform: translateY(0);
+            animation: slideUp var(--transition-medium) ease;
         }
 
         .identified-items {
             background: var(--surface-bg);
-            border-radius: var(--border-radius);
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
-            padding: 20px;
-            margin-bottom: 20px;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-inset);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
             min-height: 100px;
+            transition: all var(--transition-medium) ease;
+            animation: fadeIn var(--transition-medium) ease;
+        }
+
+        .identified-items:hover {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
         }
 
         .items-header {
@@ -121,11 +196,36 @@
 
         .item-card {
             background: var(--surface-bg);
-            border-radius: 15px;
-            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--success-color); /* Default border */
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-medium);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            border-left: 4px solid var(--success-color);
+            transition: all var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+            animation: scaleIn var(--transition-medium) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .item-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.1), transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .item-card:hover::after {
+            transform: translateX(100%);
         }
 
         .item-card.sellable-high {
@@ -154,11 +254,20 @@
 
         .controls-panel {
             background: var(--surface-bg);
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-            box-shadow: 0 -8px 16px var(--shadow-dark);
-            padding: 20px;
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+            box-shadow: 0 -10px 20px var(--shadow-dark), 0 -5px 10px var(--shadow-light);
+            padding: var(--spacing-lg);
             position: sticky;
             bottom: 0;
+            transition: transform var(--transition-medium) ease, box-shadow var(--transition-medium) ease;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .controls-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 -12px 24px var(--shadow-dark), 0 -6px 12px var(--shadow-light);
         }
 
         .primary-button {
@@ -169,8 +278,27 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 15px;
+            transition: all var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: var(--spacing-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .primary-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        .primary-button:active::after {
+            transform: translate(-50%, -50%) scale(2);
         }
 
         .primary-button.start {
@@ -193,23 +321,35 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: var(--spacing-md);
+            transition: all var(--transition-fast) ease;
         }
 
         .settings-label {
             font-size: 0.9rem;
             color: var(--text-secondary);
             font-weight: 500;
+            transition: color var(--transition-fast) ease;
         }
 
         .settings-input {
             background: var(--surface-bg);
             border: none;
-            border-radius: 15px;
-            padding: 8px 12px;
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            box-shadow: var(--shadow-inset);
             color: var(--text-primary);
             font-size: 0.9rem;
+            transition: all var(--transition-fast) ease;
+        }
+
+        .settings-input:focus {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light), 0 0 0 2px rgba(66, 133, 244, 0.2);
+            transform: scale(1.02);
+        }
+
+        .settings-input:hover {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
         }
 
         .hidden {
@@ -221,12 +361,43 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            margin-right: 8px;
+            margin-right: var(--spacing-sm);
+            transition: all var(--transition-fast) ease;
+            position: relative;
         }
 
-        .status-ready { background-color: var(--success-color); }
-        .status-processing { background-color: var(--warning-color); }
-        .status-error { background-color: #e53e3e; }
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity var(--transition-fast) ease;
+        }
+
+        .status-ready { 
+            background-color: var(--success-color);
+            box-shadow: 0 0 4px rgba(56, 178, 172, 0.4);
+        }
+
+        .status-processing { 
+            background-color: var(--warning-color);
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 4px rgba(237, 137, 54, 0.4);
+        }
+
+        .status-error { 
+            background-color: #e53e3e;
+            box-shadow: 0 0 4px rgba(229, 62, 62, 0.4);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
 
         .sellable-high {
             border-left: 4px solid var(--success-color);
@@ -258,13 +429,23 @@
 
         .setup-card {
             background: var(--surface-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 20px 20px 40px var(--shadow-dark), -20px -20px 40px var(--shadow-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-large), 0 10px 30px rgba(0, 0, 0, 0.1);
             max-width: 500px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s ease;
+            animation: slideUp var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transform: translateZ(0);
+            transition: transform var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .setup-card:hover {
+            transform: translateY(-2px) translateZ(0);
+            box-shadow: var(--shadow-large), 0 15px 35px rgba(0, 0, 0, 0.15);
         }
 
         @keyframes slideUp {
@@ -334,24 +515,60 @@
             width: 100%;
             background: var(--surface-bg);
             border: none;
-            border-radius: 10px;
-            padding: 12px 15px;
-            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            border-radius: var(--border-radius-sm);
+            padding: var(--spacing-md) var(--spacing-lg);
+            box-shadow: var(--shadow-inset);
             color: var(--text-primary);
             font-size: 0.9rem;
-            margin-bottom: 15px;
+            margin-bottom: var(--spacing-md);
+            transition: all var(--transition-fast) ease;
+            font-family: inherit;
+        }
+
+        .setup-input:focus {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light), 0 0 0 2px rgba(66, 133, 244, 0.2);
+            transform: scale(1.01);
+            outline: none;
+        }
+
+        .setup-input:hover {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
         }
 
         .setup-button {
             background: var(--surface-bg);
             border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
+            border-radius: var(--border-radius-sm);
+            padding: var(--spacing-md) var(--spacing-lg);
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-right: 10px;
-            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            transition: all var(--transition-fast) cubic-bezier(0.4, 0, 0.2, 1);
+            margin-right: var(--spacing-sm);
+            box-shadow: var(--shadow-medium);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .setup-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        .setup-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-large);
+        }
+
+        .setup-button:active::after {
+            transform: translate(-50%, -50%) scale(2);
         }
 
         .setup-button:active {
@@ -434,20 +651,22 @@
         /* Notification System */
         .notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
             background: var(--surface-bg);
-            border-radius: 12px;
-            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
-            padding: 15px 20px;
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--shadow-large);
+            padding: var(--spacing-md) var(--spacing-lg);
             max-width: 300px;
             z-index: 2000;
             transform: translateX(400px);
-            transition: transform 0.3s ease;
+            transition: all var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUp var(--transition-medium) ease;
         }
 
         .notification.show {
             transform: translateX(0);
+            animation: slideUp var(--transition-medium) ease;
         }
 
         .notification.success {
@@ -485,7 +704,8 @@
         .loading-content {
             text-align: center;
             max-width: 400px;
-            padding: 20px;
+            padding: var(--spacing-lg);
+            animation: fadeIn var(--transition-slow) ease;
         }
 
         .loading-spinner {
@@ -495,7 +715,8 @@
             border-top: 4px solid var(--accent-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto var(--spacing-lg);
+            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
         }
 
         @keyframes spin {
@@ -1459,16 +1680,136 @@ Format as: "ITEM: [name] | CONDITION: [condition] | DESCRIPTION: [description] |
                 await initCamera();
                 updateLoadingItem('checkCamera', 'success', 'Camera initialized');
 
-                // Check AI server
-                updateLoadingItem('checkAI', 'loading');
-                try {
-                    const response = await fetch(`${baseURL.value}/health`, { 
-                        method: 'GET',
-                        timeout: 3000 
-                    });
-                    updateLoadingItem('checkAI', 'success', 'AI server connected');
-                } catch (error) {
-                    updateLoadingItem('checkAI', 'error', 'AI server offline (will try to connect)');
+                // Check and setup AI server with user-friendly messages
+                updateLoadingItem('checkAI', 'loading', '🔍 Checking for your personal AI model...');
+                
+                let aiConnected = false;
+                const maxRetries = 180; // 3 minutes total for first-time setup
+                let retryCount = 0;
+                let downloadStarted = false;
+                
+                // Update loading screen with first-time setup message
+                if (!localStorage.getItem('model_downloaded')) {
+                    const isMobile = isMobileDevice();
+                    loadingText.innerHTML = `
+                        <strong style="font-size: 1.2em; color: var(--accent-color);">
+                            ${isMobile ? '📱 Setting Up Your Mobile AI Assistant' : 'Setting Up Your Personal AI Assistant'}
+                        </strong>
+                        <p style="margin: 15px 0; line-height: 1.5;">
+                            For your privacy and security, Simply eBay uses a local AI model that runs entirely on your ${isMobile ? 'phone' : 'device'}.
+                            <br><br>
+                            <strong>First-time setup:</strong>
+                            <br>
+                            • Downloading your personal AI model
+                            <br>
+                            • This happens only once
+                            <br>
+                            • Takes about ${isMobile ? '3-5 minutes on mobile' : '2-3 minutes on fast internet'}
+                            <br>
+                            ${isMobile ? '• Works offline after download!' : ''}
+                            <br><br>
+                            Please keep this ${isMobile ? 'app' : 'tab'} open...
+                        </p>
+                    `;
+                }
+                
+                while (!aiConnected && retryCount < maxRetries) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 2000);
+                        
+                        const response = await fetch(`${baseURL.value}/health`, { 
+                            method: 'GET',
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
+                        
+                        if (response.ok) {
+                            updateLoadingItem('checkAI', 'success', '✨ AI model ready!');
+                            aiConnected = true;
+                            localStorage.setItem('model_downloaded', 'true');
+                            
+                            // Show success message for first-time setup
+                            if (!downloadStarted) {
+                                showNotification('Your personal AI model is ready! You won\'t need to download it again.', 'success', 5000);
+                            }
+                        } else {
+                            throw new Error('Still preparing...');
+                        }
+                    } catch (error) {
+                        retryCount++;
+                        
+                        // First-time setup progress messages
+                        if (!downloadStarted && retryCount === 1) {
+                            downloadStarted = true;
+                            updateLoadingItem('checkAI', 'loading', '📥 Downloading your personal AI model...');
+                        } else if (retryCount < 30) {
+                            updateLoadingItem('checkAI', 'loading', '🚀 Starting download... (one-time setup)');
+                        } else if (retryCount < 90) {
+                            const progress = Math.min(Math.floor((retryCount - 30) * 1.7), 100);
+                            updateLoadingItem('checkAI', 'loading', `📦 Downloading model: ~${progress}%`);
+                        } else if (retryCount < 150) {
+                            updateLoadingItem('checkAI', 'loading', '⚡ Preparing AI model...');
+                        } else {
+                            updateLoadingItem('checkAI', 'loading', '🔄 Almost ready...');
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                if (!aiConnected) {
+                    updateLoadingItem('checkAI', 'error', '❌ AI setup needs attention');
+                    console.warn('AI server setup incomplete after 3 minutes');
+                    
+                    // Show detailed help message with action buttons
+                    loadingText.innerHTML = `
+                        <strong style="color: #e53e3e; font-size: 1.2em;">AI Setup Needs Attention</strong>
+                        <p style="margin: 15px 0; line-height: 1.5;">
+                            Don't worry! This is usually an easy fix. Here's what to do:
+                            <br><br>
+                            1. Make sure you have <strong>llama.cpp</strong> installed:
+                            <br>
+                            • On Mac: <code style="background: rgba(66,133,244,0.1); padding: 2px 6px; border-radius: 4px;">brew install llama.cpp</code>
+                            <br>
+                            • On Windows: Download from GitHub
+                            <br><br>
+                            2. Then just refresh this page!
+                        </p>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="window.open('SETUP.md', '_blank')" style="
+                                background: var(--accent-color);
+                                color: white;
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 25px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                margin: 0 10px;
+                                box-shadow: 0 4px 12px rgba(66,133,244,0.3);
+                                font-size: 1.1em;
+                            ">📖 Quick Setup Guide</button>
+                            <button onclick="window.location.reload()" style="
+                                background: var(--surface-bg);
+                                color: var(--text-primary);
+                                border: none;
+                                padding: 12px 24px;
+                                border-radius: 25px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                margin: 0 10px;
+                                box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+                            ">🔄 Retry Connection</button>
+                        </div>
+                        <p style="margin-top: 20px; color: var(--text-secondary); font-size: 0.9em; text-align: center;">
+                            Simply eBay requires local AI to protect your privacy and data.
+                            <br>
+                            Installation takes just a minute!
+                        </p>
+                    `;
+                    
+                    showNotification('AI setup required. Please follow the setup guide to install llama.cpp.', 'error', 10000);
                 }
 
                 // All done
@@ -1568,14 +1909,131 @@ Format as: "ITEM: [name] | CONDITION: [condition] | DESCRIPTION: [description] |
             }
         });
 
-        // PWA installation prompt
+        // Enhanced PWA installation for mobile
         let deferredPrompt;
+        let installPromptShown = false;
+
         window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
             deferredPrompt = e;
+            
+            // Show install prompt for mobile users
+            if (!installPromptShown && isMobileDevice()) {
+                showMobileInstallPrompt();
+                installPromptShown = true;
+            }
         });
 
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        function showMobileInstallPrompt() {
+            const installBanner = document.createElement('div');
+            installBanner.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, var(--accent-color), #5a9fd4);
+                color: white;
+                padding: 15px;
+                text-align: center;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: slideDown 0.3s ease;
+            `;
+            
+            installBanner.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 8px;">📱 Install Simply eBay</div>
+                <div style="font-size: 0.9em; margin-bottom: 12px;">Get the full mobile experience with offline AI!</div>
+                <button id="installBtn" style="
+                    background: white;
+                    color: var(--accent-color);
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    margin-right: 10px;
+                    cursor: pointer;
+                ">Install App</button>
+                <button id="dismissBtn" style="
+                    background: transparent;
+                    color: white;
+                    border: 1px solid white;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-weight: 600;
+                    cursor: pointer;
+                ">Maybe Later</button>
+            `;
+            
+            document.body.appendChild(installBanner);
+            
+            // Add slide down animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideDown {
+                    from { transform: translateY(-100%); }
+                    to { transform: translateY(0); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Handle install button
+            document.getElementById('installBtn').addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            if ('setAppBadge' in navigator) {
+                                // Clear any existing badge
+                                navigator.clearAppBadge().catch(err => console.error('Failed to clear badge:', err));
+                                
+                                // Show "AI Ready" badge when model is downloaded
+                                if (localStorage.getItem('model_downloaded')) {
+                                    navigator.setAppBadge(1).catch(err => console.error('Failed to set badge:', err));
+                                    setTimeout(() => {
+                                        navigator.clearAppBadge().catch(err => console.error('Failed to clear badge:', err));
+                                    }, 5000);
+                                }
+                            }
+                            showNotification('App installed! You can now use Simply eBay offline.', 'success', 5000);
+                        }
+                    deferredPrompt = null;
+                }
+                document.body.removeChild(installBanner);
+            });
+            
+            // Handle dismiss button
+            document.getElementById('dismissBtn').addEventListener('click', () => {
+                document.body.removeChild(installBanner);
+                localStorage.setItem('install_prompt_dismissed', Date.now());
+            });
+            
+            // Auto-dismiss after 10 seconds
+            setTimeout(() => {
+                if (document.body.contains(installBanner)) {
+                    document.body.removeChild(installBanner);
+                }
+            }, 10000);
+        }
+
+        // Show install prompt again after 24 hours if dismissed
+        function checkInstallPrompt() {
+            const dismissed = localStorage.getItem('install_prompt_dismissed');
+            if (dismissed && Date.now() - parseInt(dismissed) > 24 * 60 * 60 * 1000) {
+                localStorage.removeItem('install_prompt_dismissed');
+                installPromptShown = false;
+            }
+        }
+
+
         // Initialize app when page loads
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        document.addEventListener('DOMContentLoaded', () => {
+            checkInstallPrompt();
+            initializeApp();
+        });
     </script>
 </body>
 </html>

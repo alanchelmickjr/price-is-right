@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Simply eBay - Point, Estimate, Post</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4285f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <style>
+        :root {
+            --primary-bg: #e6e7ee;
+            --surface-bg: #e6e7ee;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --accent-color: #4285f4;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --border-radius: 20px;
+            --thumb-size: 60px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .app-header {
+            text-align: center;
+            padding: 20px;
+            background: var(--surface-bg);
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .app-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .app-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .camera-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 20px;
+            max-width: 100%;
+        }
+
+        .video-wrapper {
+            position: relative;
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+            overflow: hidden;
+            margin-bottom: 20px;
+            aspect-ratio: 4/3;
+        }
+
+        #videoFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: #000;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 10px;
+            backdrop-filter: blur(10px);
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .video-overlay.show {
+            transform: translateY(0);
+        }
+
+        .identified-items {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+
+        .items-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .item-card {
+            background: var(--surface-bg);
+            border-radius: 15px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--success-color); /* Default border */
+        }
+
+        .item-card.sellable-high {
+            border-left-color: var(--success-color); /* Green for high sellability */
+        }
+
+        .item-card.sellable-medium {
+            border-left-color: var(--warning-color); /* Orange for medium sellability */
+        }
+
+        .item-card.sellable-low {
+            border-left-color: #e53e3e; /* Red for low sellability */
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .controls-panel {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            box-shadow: 0 -8px 16px var(--shadow-dark);
+            padding: 20px;
+            position: sticky;
+            bottom: 0;
+        }
+
+        .primary-button {
+            width: 100%;
+            height: var(--thumb-size);
+            border: none;
+            border-radius: calc(var(--thumb-size) / 2);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 15px;
+        }
+
+        .primary-button.start {
+            background: var(--surface-bg);
+            color: var(--success-color);
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+        }
+
+        .primary-button.start:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+        }
+
+        .primary-button.stop {
+            background: var(--warning-color);
+            color: white;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .settings-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .settings-input {
+            background: var(--surface-bg);
+            border: none;
+            border-radius: 15px;
+            padding: 8px 12px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-ready { background-color: var(--success-color); }
+        .status-processing { background-color: var(--warning-color); }
+        .status-error { background-color: #e53e3e; }
+
+        .sellable-high {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .sellable-medium {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .sellable-low {
+            border-left: 4px solid #e53e3e;
+        }
+
+        /* Setup Wizard Styles */
+        .setup-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .setup-card {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 20px 20px 40px var(--shadow-dark), -20px -20px 40px var(--shadow-light);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .setup-header {
+            padding: 20px 20px 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(163, 177, 198, 0.2);
+        }
+
+        .setup-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+
+        .setup-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .setup-content {
+            padding: 20px;
+        }
+
+        .setup-step {
+            display: none;
+        }
+
+        .setup-step.active {
+            display: block;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 600;
+            margin-right: 10px;
+            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+        }
+
+        .step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .setup-input {
+            width: 100%;
+            background: var(--surface-bg);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 15px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .setup-button {
+            background: var(--surface-bg);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 10px;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+        }
+
+        .setup-button:active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+        }
+
+        .setup-button.primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .setup-button.secondary {
+            color: var(--text-secondary);
+        }
+
+        .setup-buttons {
+            text-align: right;
+            padding-top: 20px;
+            border-top: 1px solid rgba(163, 177, 198, 0.2);
+        }
+
+        .external-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .external-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-badge.success {
+            background: rgba(72, 187, 120, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-badge.error {
+            background: rgba(229, 62, 62, 0.2);
+            color: #e53e3e;
+        }
+
+        .status-badge.warning {
+            background: rgba(237, 137, 54, 0.2);
+            color: var(--warning-color);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(163, 177, 198, 0.3);
+            border-radius: 3px;
+            margin: 15px 0 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), #5a9fd4);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 16.67%; /* 1/6 steps */
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Notification System */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--surface-bg);
+            border-radius: 12px;
+            box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+            padding: 15px 20px;
+            max-width: 300px;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid #e53e3e;
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-content {
+            text-align: center;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(66, 133, 244, 0.2);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-content h2 {
+            color: var(--accent-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .loading-content p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .loading-checklist {
+            text-align: left;
+        }
+
+        .loading-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .loading-icon {
+            width: 20px;
+            margin-right: 10px;
+            font-size: 0.8rem;
+        }
+
+        .loading-item.success .loading-icon {
+            color: var(--success-color);
+        }
+
+        .loading-item.error .loading-icon {
+            color: #e53e3e;
+        }
+
+        @media (min-width: 768px) {
+            .camera-container {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <h1 class="app-title">Simply eBay</h1>
+        <p class="app-subtitle">Point, Estimate, Post</p>
+    </header>
+
+    <main class="camera-container">
+        <div class="video-wrapper">
+            <video id="videoFeed" autoplay playsinline></video>
+            <div id="videoOverlay" class="video-overlay">
+                <div class="status-indicator status-ready"></div>
+                <span id="overlayText">Ready to scan</span>
+            </div>
+        </div>
+
+        <section class="identified-items">
+            <h2 class="items-header">Identified Items</h2>
+            <div id="itemsList">
+                <p style="color: var(--text-secondary); font-style: italic;">
+                    Start scanning to identify sellable items...
+                </p>
+            </div>
+        </section>
+
+        <section class="identified-items" id="historySection" style="display: none;">
+            <div class="settings-row" style="margin-bottom: 15px;">
+                <h2 class="items-header" style="margin: 0;">Recent Sessions</h2>
+                <button id="toggleHistoryBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer;">Show</button>
+            </div>
+            <div id="historyList">
+                <p style="color: var(--text-secondary); font-style: italic;">
+                    No recent scanning sessions...
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="controls-panel">
+        <button id="startButton" class="primary-button start">Start Scanning</button>
+        
+        <div class="settings-row">
+            <label class="settings-label">Scan Interval:</label>
+            <select id="intervalSelect" class="settings-input">
+                <option value="500">0.5s</option>
+                <option value="1000" selected>1s</option>
+                <option value="2000">2s</option>
+                <option value="3000">3s</option>
+            </select>
+        </div>
+
+        <div class="settings-row">
+            <label class="settings-label">API Server:</label>
+            <input id="baseURL" class="settings-input" value="http://localhost:8080" style="flex: 1; margin-left: 10px;">
+        </div>
+
+        <div class="settings-row">
+            <button id="setupHere is the comprehensive plan for the UI/UX dashboard enhancement:
+
+Information Gathered:
+- The current app is a fully functional PWA with camera, AI, and eBay integration.
+- It already uses a neumorphic design with CSS variables and modern UI components.
+- The user wants a modern rounded neumorphic feel with improved UI/UX.
+
+Plan:
+- Update CSS variables for a refined color palette with better contrast.
+- Enhance neumorphic shadows and depth for UI elements like buttons, cards, and containers.
+- Add smooth animations and transitions for interactive elements (buttons, overlays, modals).
+- Improve spacing and typography for better readability and visual hierarchy.
+- Add subtle micro-interactions such as button press effects, hover states, and status indicator animations.
+- Ensure all existing functionality and layout remain intact.
+
+Dependent Files to be edited:
+- index.html (CSS styles and possibly minor HTML tweaks for interaction enhancements)
+
+Followup steps:
+- After editing, test the UI on desktop and mobile for responsiveness and visual consistency.
+- Verify all existing features (camera, scanning, setup wizard, notifications) work as before.
+- Get user feedback for any further refinements.
+
+Please confirm if you approve this detailed plan so I can proceed with the implementation.
+
+<ask_followup_question>
+<question>Do you approve the above plan for enhancing the Simply eBay UI/UX dashboard with modern rounded neumorphic design and improved interactions?</question>
+</ask_followup_question>

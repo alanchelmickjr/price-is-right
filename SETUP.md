@@ -1,144 +1,84 @@
 # Simply eBay - Setup Guide
 
-## 🚀 Quick Start (5 minutes)
+## Quick Start
 
-### Option 1: Direct File Opening (Easiest)
-1. **Download the project**
-2. **Open `index.html` directly in your browser**
-3. **Allow camera permissions when prompted**
-4. **Follow the setup wizard for eBay API**
+1. **Run the start script**
+   - On Windows: Double-click `start.bat`
+   - On macOS/Linux: Run `./start.sh`
 
-⚠️ **Note**: Some features like camera access might be restricted when opening files directly. Use Option 2 for full functionality.
+The script will automatically:
+- Start a local web server
+- Start the AI server (if llama.cpp is installed)
+- Open the app in your browser
 
-### Option 2: Local Server (Recommended)
-1. **Navigate to project folder in terminal**
-2. **Start a local server**:
-   ```bash
-   # Python 3
-   python -m http.server 8000
-   
-   # Python 2
-   python -m SimpleHTTPServer 8000
-   
-   # Node.js (if you have it)
-   npx http-server -p 8000
-   
-   # PHP (if you have it)
-   php -S localhost:8000
-   ```
-3. **Open in browser**: `http://localhost:8000`
-4. **Follow the setup wizard**
+## Manual Installation
 
-### Option 3: GitHub Pages / Netlify (Online)
-1. **Fork this repository**
-2. **Enable GitHub Pages** in repository settings
-3. **Access your live URL**
-4. **Setup eBay API through the wizard**
+### 1. Install Python
+- Download from [python.org](https://python.org)
+- Make sure Python is added to your PATH
 
-## 🔧 Dependencies
+### 2. Install llama.cpp (Required for AI Features)
 
-### Automatically Loaded from CDN:
-- **Gun.js**: Real-time database for local storage
-- **AI Model**: SmolVLM (via llama.cpp server)
-
-### Local Requirements:
-- **llama.cpp**: For AI vision processing
-- **Modern browser**: Chrome, Firefox, Safari, Edge
-- **Camera access**: For item scanning
-
-## 📋 Setup Checklist
-
-### 1. Start AI Server
+#### macOS
 ```bash
-# Install llama.cpp first (see https://github.com/ggml-org/llama.cpp)
-llama-server -hf ggml-org/SmolVLM-500M-Instruct-GGUF -ngl 99
+# Using Homebrew
+brew install llama.cpp
 ```
 
-### 2. Open the App
-- Direct: Double-click `index.html`
-- Server: Navigate to `http://localhost:8000`
+#### Windows
+1. Download the latest release from [llama.cpp releases](https://github.com/ggerganov/llama.cpp/releases)
+2. Extract to a folder
+3. Add the folder to your PATH
 
-### 3. Configure eBay API
-- Click "Setup eBay API" button
-- Follow the 6-step wizard
-- Test your connection
-
-### 4. Start Scanning!
-- Allow camera permissions
-- Point at items you want to sell
-- Get instant pricing and descriptions
-
-## 🌐 How It All Works
-
-### Architecture:
-```
-📱 Browser App (PWA)
-├── 🎥 Camera API (getUserMedia)
-├── 🤖 llama.cpp server (localhost:8080)
-├── 💰 eBay API (real-time pricing)
-├── 💾 Gun.js (local data storage)
-└── 🎨 Neumorphic UI (CSS/JS)
+#### Build from Source
+```bash
+git clone https://github.com/ggerganov/llama.cpp
+cd llama.cpp
+mkdir build && cd build
+cmake ..
+cmake --build . --config Release
 ```
 
-### Data Flow:
-1. **Camera** captures item images
-2. **AI Server** identifies sellable items
-3. **eBay API** fetches real pricing
-4. **Gun.js** stores data locally
-5. **UI** displays results beautifully
+### 3. Start the Servers Manually
 
-## 🔐 Privacy & Security
+1. **Start the Web Server**
+```bash
+# From the project directory
+python -m http.server 8000
+```
 
-- **Local-First**: All processing happens on your device
-- **No Cloud Storage**: Your data never leaves your device
-- **Secure APIs**: eBay credentials stored in browser localStorage
-- **No Tracking**: No analytics or data collection
+2. **Start the AI Server**
+```bash
+llama-server \
+  --hf-repo ggml-org/SmolVLM-500M-Instruct-GGUF \
+  --hf-file smolvlm-500m-instruct-q4_k_m.gguf \
+  --port 8080 \
+  --host 0.0.0.0 \
+  --n-gpu-layers 99 \
+  --chat-template chatml
+```
 
-## 🛠️ Troubleshooting
+3. Open http://localhost:8000 in your browser
 
-### Camera Not Working?
+## Optional: eBay API Setup
+
+1. Create an eBay Developer Account at [developer.ebay.com](https://developer.ebay.com)
+2. Create a new application
+3. Copy your Client ID and Client Secret
+4. Click "Setup eBay API" in the app to configure
+
+## Troubleshooting
+
+### AI Server Issues
+- Ensure llama.cpp is installed and in your PATH
+- Try running without GPU acceleration (remove --n-gpu-layers)
+- Check server logs at http://localhost:8080/health
+
+### Web Server Issues
+- Make sure port 8000 is available
+- Try a different port: `python -m http.server 8001`
+
+### Camera Issues
 - Ensure you're using HTTPS or localhost
-- Check browser permissions
-- Try different browser
-
-### AI Not Responding?
-- Check llama.cpp server is running on port 8080
-- Verify model is loaded correctly
-- Check console for errors
-
-### eBay Prices Not Showing?
-- Run through setup wizard again
-- Check your API credentials
-- Verify internet connection
-
-### PWA Not Installing?
-- Use a local server (Option 2)
-- Ensure manifest.json is accessible
-- Try different browser
-
-## 📱 Mobile Installation
-
-1. **Open in mobile browser**
-2. **Look for "Add to Home Screen" prompt**
-3. **Or use browser menu**: "Add to Home Screen"
-4. **App will work offline after first load**
-
-## 🚀 Advanced Setup
-
-### Custom AI Models:
-```bash
-# Try different models for better accuracy
-llama-server -hf ggml-org/SmolVLM-1.7B-Instruct-GGUF
-
-# Or use other vision models
-llama-server -hf microsoft/DialoGPT-medium
-```
-
-### Production eBay API:
-- Set `sandbox: false` in setup wizard
-- Use production eBay credentials
-- Higher rate limits and real marketplace data
-
----
-
-**Need help?** Check the console (F12) for error messages or create an issue on GitHub.
+- Grant camera permissions in your browser
+- Try a different browser (Chrome recommended)
