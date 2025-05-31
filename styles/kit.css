@@ -1,20 +1,17 @@
-.sign-up-button {
+.sign-up-button, .ebay-sign {
     all: unset;
 
     background-color: white;
     width: 100%;
-    max-width: 200px;
-    max-height: 64px;
-    box-shadow: none;
     font-size: 13px;
-    font-weight: medium;
-    color: rgb(85, 87, 94);
+    font-weight: 600;
+    color: rgb(66, 68, 74);
     letter-spacing: -0.2px;
     border: solid 0.5px rgb(234, 237, 243);
-    padding: 4px 16px;
     border-radius: 24px;
     display: flex;
     justify-content: center;
+    padding: 4px 0px;
 }
 
 
@@ -23,11 +20,15 @@
     all: unset;
 
     font-size: 20px;
-    letter-spacing: -1px;
-    font-weight: semibold;
+    letter-spacing: -0.5px;
+    font-weight: 600;
+    color: rgb(53, 54, 71);
 }
 
 .authform   {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .welcome-text-wrapper   {
@@ -47,13 +48,27 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 300px;
+    max-width: 100%;
 }
 
 .sign-up-wrapper{
     all: unset;
 
     display: flex;
-    flex-direction: row;
+    width: 300px;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+}
+
+.email-form-wrapper{
+    all: unset;
+
+    display: flex;
+    width: 300px;
+    flex-direction: column;
+    gap: 4px;
     justify-content: center;
     width: 100%;
 }
@@ -62,13 +77,13 @@
     all: unset;
 
     width: 100%;
-    background-color: blueviolet;
+    background-color: hsl(215, 94%, 46%);
     text-align: center;
     height: 40px;
     border-radius: 20px;
     color: white;
     letter-spacing: -0.2px;
-    font-weight: semibold;
+    font-weight: 700;
     font-size: 13.5px;
 }
 
@@ -77,26 +92,40 @@
 
     font-size: 14px;
     color: blue;
+    text-decoration: none;
+    letter-spacing: -0.2px;
+}
+
+.muted-button   {
+    all:  unset;
+
+    font-size: 13px;
+    font-weight: 600;
+    color: rgb(69, 69, 86);
+    text-decoration: none;
+    letter-spacing: -0.2px;
 }
 
 
 
 .login-wrapper  {
+    all: unset;
     background-color: rgb(248, 249, 252);
-    padding: 8px;
+    padding: 16px 8px;
     border-radius: 36px;
-    width: 100%;
-    max-width: 4400px;
+    width: 300px;
+    max-width: 95%;
     display: flex;
     flex-direction: column;
     align-items: center;
-
+    gap: 16px
 }
 
 .login-section  {
     display: flex;
     height: 100vh;
     flex-direction: column;
+    gap: 24px;
     align-items: center;
     justify-content: center;
 }
@@ -104,12 +133,13 @@
 .form-input  {
     all: unset;
 
-    min-height: 32px;
+    height: 40px;
     border-radius: 20px;
     background-color: white;
-    padding: 4px 16px;
+    padding: 0px 16px;
     font-size: 14px;
     background-color: white;
+    color: #323336;
 }
 
 .input-group    {
@@ -120,11 +150,18 @@
 .input-label    {
     font-size: 13px;
     margin: 0px 12px;
+    color: hsl(216, 15%, 50%);
 }
 
 .password-input {
-    background-color: white;
+    background-color: red;
     outline: none;
+}
+
+.password-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 input:active {
@@ -135,9 +172,50 @@ input:-webkit-autofill {
     box-shadow: 0 0 0px 1000px white inset !important;
     border: none;
     -webkit-text-fill-color: #000 !important;
+    color: #323336;
+  }
+
+  .password-input:-webkit-autofill {
+    box-shadow: 0 0 0px 1000px white inset !important;
+    border: blue;
+    -webkit-text-fill-color: #000 !important;
+    color: #323336;
   }
 
   .status-indicators {
     text-align: center;
     font-size: 13px;
+  }
+
+  .side-list {
+    display: flex;
+    gap: 8px;
+  }
+
+  .toggle-visible   {
+    all: unset;
+
+    background-color: white;
+    stroke: none;
+    box-shadow: none;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: scale(.6);
+  }
+
+  .forgot-password  {
+        font-size: 10px;
+        font-weight: 500;
+        margin: 12px;
+  }
+
+  .vertical-spacing  {
+    all: unset;
+    height: 40px;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 12px;
   }

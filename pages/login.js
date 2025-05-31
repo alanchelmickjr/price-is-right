@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState('login'); // "login" or "register"
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  let ebay
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -18,6 +19,9 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
+    ebay = new Image();
+    ebay.src = '../public/assets/svgs/ebay.svg';
+
     if (mounted && isAuthenticated && !loading) {
       router.push('/dashboard');
     }
@@ -41,10 +45,10 @@ export default function LoginPage() {
       
       <div className="login-section">
         {/* Animated background elements */}
-        <div className="absolute inset-0 opacity-30">
+        {/* <div className="absolute inset-0 opacity-30">
           <div className="absolute top-20 left-20 w-72 h-72 bg-violet-200 dark:bg-violet-900/50 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-emerald-200 dark:bg-emerald-900/50 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        </div>
+        </div> */}
 
         {/* Main content */}
         <div className="relative z-10 w-full max-w-md mx-auto px-6">
@@ -67,19 +71,21 @@ export default function LoginPage() {
              {/*wrapper to contain all Oauth buttons */}
             <div className = "sign-up-wrapper">
             {/* eBay OAuth Login */}
-              <div className="">
-                <button
-                  className="sign-up-button"
-                  style={{marginBottom: 4}}
-                  onClick={() => window.location.href = '/api/auth/login?provider=ebay'}
-                >                Sign in with eBay
-                </button>
-                <AuthForm
-                  mode={mode}
-                  onSuccess={handleAuthSuccess}
-                  showOAuth={true}
-                />
-              </div>
+            <div className="w-full">
+              <button
+                className="ebay-sign side-list"
+                style={{ marginBottom: 4 }}
+                onClick={() => window.location.href = '/api/auth/login?provider=ebay'}
+              >
+                <img src="/assets/svgs/ebay.svg" alt="eBay" width={"24px"} height = {"24px"} />
+                Sign in with eBay
+              </button>
+              <AuthForm
+                mode={mode}
+                onSuccess={handleAuthSuccess}
+                showOAuth={true}
+              />
+            </div>
               {/* Auth Form */}
             </div>
             {/* Toggle login/register link */}

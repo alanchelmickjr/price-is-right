@@ -109,21 +109,21 @@ export default function StatusIndicators() {
         {/* Left corner - Gun.js status */}
         <div className="flex items-center space-x-2">
           <div className={`w-3 h-3 rounded-full ${getStatusColor(gunStatus, 'gun')} ${gunStatus === 'syncing' ? 'animate-ping' : 'animate-pulse'}`}></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">
+          <span className="input-label">
             {getStatusText(gunStatus, 'gun')}
           </span>
         </div>
         
         {/* Center - Legal links */}
-        <div className="flex gap-4">
-          <a href="/terms" className="text-xs text-gray-400 no-underline font-medium hover:text-primary transition-colors">Terms of Service</a>
-          <a href="/privacy" className="text-xs text-gray-400 no-underline font-medium hover:text-primary transition-colors">Privacy Policy</a>
+        <div className="side-list">
+          <a href="/terms" className="muted-button">Terms of Service</a>
+          <a href="/privacy" className="muted-button">Privacy Policy</a>
         </div>
         
-        {/* Right corner - LlamaFile status */}
+        {/* Right corner - LlamaFile status */} 
         <div className="flex items-center space-x-2">
           <div className={`w-3 h-3 rounded-full ${getStatusColor(llamaStatus, 'llama')} ${llamaStatus === 'loading' ? 'animate-ping' : 'animate-pulse'}`}></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">
+          <span className="input-label">
             {getStatusText(llamaStatus, 'llama')}
           </span>
         </div>
