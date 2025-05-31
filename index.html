@@ -873,7 +873,6 @@
         <button id="settingsBtn" class="control-btn utility" title="Settings">⚙️</button>
         <button id="setupEbayBtn" class="control-btn utility" style="background: var(--warning-color); color: white;" title="Setup eBay">
             🛍️
-            <span id="ebayStatus" class="status-badge warning" style="position: absolute; top: -2px; right: -2px; margin: 0; padding: 2px; font-size: 0.6rem;">!</span>
         </button>
     </div>
 
@@ -888,8 +887,12 @@
         </div>
 
         <section class="identified-items">
-            <h2 class="items-header">AI Raw Output</h2>
+            <div class="settings-row" style="margin-bottom: 15px;">
+                <h2 class="items-header" style="margin: 0;">AI Raw Output</h2>
+                <button id="toggleRawBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer;">Show</button>
+            </div>
             <div id="rawOutput" style="
+                display: none;
                 background: var(--surface-bg);
                 border-radius: var(--border-radius-sm);
                 box-shadow: var(--shadow-inset);
@@ -930,7 +933,15 @@
     </main>
 
     <!-- Settings Menu -->
-    <div class="fab-menu" id="settingsMenu" style="position: fixed; top: 120px; right: var(--spacing-lg); z-index: 1001;">
+    <div class="fab-menu" id="settingsMenu" style="
+        position: fixed;
+        bottom: calc(var(--spacing-lg) + var(--thumb-size));
+        right: var(--spacing-lg);
+        z-index: 1001;
+        background: var(--surface-bg);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-large);
+    ">
         <div class="fab-menu-item">
             <i>⏱️</i>
             <div style="flex: 1;">
@@ -1295,47 +1306,36 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
 
         // Save identified items to local storage
         function saveItemsLocally(items) {
-            const timestamp = Date.now();
-            const sessionData = {
-                timestamp,
-                itemCount: items.length,
-                sessionId: `scan_${timestamp}`
-            };
-            
-            // Store session metadata
-            gun.get('ebay-sessions').get(sessionData.sessionId).put(sessionData);
-            
-            // Store individual items
+            // Store individual items in current session
             items.forEach((item, index) => {
                 const itemData = {
                     ...item,
-                    sessionId: sessionData.sessionId,
+                    sessionId: currentSessionId,
                     itemIndex: index,
-                    timestamp
+                    timestamp: Date.now()
                 };
-                gun.get('ebay-items').get(`${sessionData.sessionId}_${index}`).put(itemData);
+                gun.get('sessions').get(currentSessionId).get('items').set(itemData);
             });
             
-            // Store recent session list
-            gun.get('recent-sessions').set(sessionData.sessionId);
+            // Update session metadata
+            gun.get('sessions').get(currentSessionId).put({
+                itemCount: currentSessionItems.size,
+                lastUpdate: Date.now()
+            });
         }
 
         // Load recent scanning sessions
         async function loadRecentSessions() {
             return new Promise((resolve) => {
                 const sessions = [];
-                gun.get('recent-items').map().on((sessionId, key) => {
-                    if (sessionId) {
-                        gun.get('ebay-items').get(sessionId).once((sessionData) => {
-                            if (sessionData && sessionData.items) {
-                                sessions.push(sessionData);
-                            }
-                        });
+                gun.get('sessions').map().once((sessionData, sessionId) => {
+                    if (sessionData && sessionData.startTime) {
+                        sessions.push(sessionData);
                     }
                 });
                 
                 // Give it a moment to load
-                setTimeout(() => resolve(sessions.sort((a, b) => b.timestamp - a.timestamp)), 1000);
+                setTimeout(() => resolve(sessions.sort((a, b) => b.startTime - a.startTime)), 1500);
             });
         }
 
@@ -1431,6 +1431,53 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             });
         }
 
+        // Clear current session items when starting new scan
+        function clearCurrentSession() {
+            currentSessionItems.clear();
+            itemsList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Start scanning to identify sellable items...</p>';
+        }
+
+        // Enhanced history display with session loading
+        function displayHistory(sessions) {
+            if (sessions.length === 0) {
+                historyList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No recent scanning sessions...</p>';
+                return;
+            }
+
+            const historyHTML = sessions.map(session => {
+                const date = new Date(session.startTime).toLocaleDateString();
+                const time = new Date(session.startTime).toLocaleTimeString();
+                const duration = session.endTime ? 
+                    Math.round((session.endTime - session.startTime) / 1000) + 's' : 
+                    'Active';
+                
+                return `
+                <div class="item-card" style="border-left-color: var(--accent-color);">
+                    <div class="item-name">Session: ${date} at ${time}</div>
+                    <div class="item-details">
+                        <strong>Duration:</strong> ${duration}<br>
+                        <strong>Items Found:</strong> ${session.itemCount || 0}<br>
+                        <button onclick="loadSession('${session.id}')" class="settings-input" style="margin-top: 10px;">
+                            View Items
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            historyList.innerHTML = historyHTML;
+        }
+
+        // Load specific session
+        function loadSession(sessionId) {
+            clearCurrentSession();
+            gun.get('sessions').get(sessionId).get('items').map().once((item, id) => {
+                if (item) {
+                    addItemToDisplay(item);
+                }
+            });
+        }
+
         function updateStatus(type, message) {
             const indicator = document.querySelector('.status-indicator');
             indicator.className = `status-indicator status-${type}`;
@@ -1450,11 +1497,15 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             return canvas.toDataURL('image/jpeg', 0.7);
         }
 
+        // Current session ID
+        let currentSessionId = `scan_${Date.now()}`;
+        let currentSessionItems = new Set();
+
         function parseAIResponse(response) {
             // Show raw output for debugging
             document.getElementById('rawOutput').textContent = response;
             
-            const items = [];
+            const newItems = [];
             const lines = response.split('\n');
             
             for (const line of lines) {
@@ -1465,43 +1516,78 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     const sellabilityMatch = line.match(/SELLABILITY:\s*([^|]+)/);
                     
                     if (itemMatch) {
-                        items.push({
-                            name: itemMatch[1].trim(),
-                            condition: conditionMatch ? conditionMatch[1].trim() : 'Unknown',
-                            description: descriptionMatch ? descriptionMatch[1].trim() : '',
-                            sellability: sellabilityMatch ? sellabilityMatch[1].trim() : 'Medium'
-                        });
+                        const itemName = itemMatch[1].trim();
+                        // Only add if not already in current session
+                        if (!currentSessionItems.has(itemName)) {
+                            const item = {
+                                id: `${currentSessionId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                                name: itemName,
+                                condition: conditionMatch ? conditionMatch[1].trim() : 'Unknown',
+                                description: descriptionMatch ? descriptionMatch[1].trim() : '',
+                                sellability: sellabilityMatch ? sellabilityMatch[1].trim() : 'Medium',
+                                timestamp: Date.now(),
+                                sessionId: currentSessionId
+                            };
+                            newItems.push(item);
+                            currentSessionItems.add(itemName);
+                            
+                            // Store in Gun.js
+                            gun.get('items').get(item.id).put(item);
+                            gun.get('sessions').get(currentSessionId).get('items').set(item);
+                        }
                     }
                 }
             }
             
             // If no structured items found, try to extract any mentioned objects
-            if (items.length === 0) {
-                // Look for common object words in the response
+            if (newItems.length === 0) {
                 const objectWords = ['keyboard', 'mouse', 'laptop', 'computer', 'desk', 'chair', 'book', 'phone', 'tablet', 'monitor', 'screen', 'cable', 'charger', 'headphones', 'speaker', 'camera', 'watch', 'pen', 'notebook', 'cup', 'mug', 'bottle', 'lamp', 'clock'];
                 
                 for (const word of objectWords) {
-                    if (response.toLowerCase().includes(word)) {
-                        items.push({
+                    if (response.toLowerCase().includes(word) && !currentSessionItems.has(word)) {
+                        const item = {
+                            id: `${currentSessionId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                             name: word.charAt(0).toUpperCase() + word.slice(1),
                             condition: 'Unknown',
                             description: 'Detected in image',
-                            sellability: 'Medium'
-                        });
+                            sellability: 'Medium',
+                            timestamp: Date.now(),
+                            sessionId: currentSessionId
+                        };
+                        newItems.push(item);
+                        currentSessionItems.add(word);
+                        
+                        // Store in Gun.js
+                        gun.get('items').get(item.id).put(item);
+                        gun.get('sessions').get(currentSessionId).get('items').set(item);
                     }
                 }
             }
             
-            return items;
+            return newItems;
         }
 
-        function displayItems(items) {
-            if (items.length === 0) {
-                itemsList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No sellable items detected in current view...</p>';
-                return;
+
+        function displayItems(newItems) {
+            // Get all items from current session
+            gun.get('sessions').get(currentSessionId).get('items').map().once((item, id) => {
+                if (item && !document.getElementById(`item-${item.id}`)) {
+                    addItemToDisplay(item);
+                }
+            });
+
+            // Add any new items
+            newItems.forEach(item => addItemToDisplay(item));
+        }
+
+        function addItemToDisplay(item) {
+            // If no items are displayed yet, clear the "no items" message
+            if (itemsList.innerHTML.includes('No sellable items detected')) {
+                itemsList.innerHTML = '';
             }
 
-            const itemsHTML = items.map(item => {
+            // Create item card if it doesn't exist
+            if (!document.getElementById(`item-${item.id}`)) {
                 let borderColorClass = 'sellable-medium'; // Default for Medium or undefined
                 if (item.sellability) {
                     switch (item.sellability.toLowerCase()) {
@@ -1528,8 +1614,8 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     }
                 }
 
-                return `
-                <div class="item-card ${borderColorClass}">
+                const itemHTML = `
+                <div id="item-${item.id}" class="item-card ${borderColorClass}">
                     <div class="item-name">${item.name}</div>
                     <div class="item-details">
                         <strong>Condition:</strong> ${item.condition}<br>
@@ -1538,9 +1624,10 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                         ${item.description}
                     </div>
                 </div>
-            `}).join('');
+                `;
 
-            itemsList.innerHTML = itemsHTML;
+                itemsList.insertAdjacentHTML('beforeend', itemHTML);
+            }
         }
 
         async function scanForItems() {
@@ -1591,6 +1678,17 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                 return;
             }
             
+            // Clear previous session and start new one
+            clearCurrentSession();
+            currentSessionId = `scan_${Date.now()}`;
+            
+            // Create session in Gun.js
+            gun.get('sessions').get(currentSessionId).put({
+                id: currentSessionId,
+                startTime: Date.now(),
+                status: 'active'
+            });
+            
             isProcessing = true;
             startButton.textContent = "Stop Scanning";
             startButton.classList.remove('start');
@@ -1602,6 +1700,10 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             const intervalMs = parseInt(intervalSelect.value, 10);
             scanForItems(); // Initial scan
             intervalId = setInterval(scanForItems, intervalMs);
+
+            // Show history section
+            historySection.style.display = 'block';
+            toggleHistoryBtn.textContent = 'Show';
         }
 
         function handleStop() {
@@ -1663,29 +1765,22 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             }
         });
 
-        function displayHistory(sessions) {
-            if (sessions.length === 0) {
-                historyList.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">No recent scanning sessions...</p>';
-                return;
+        // Raw output toggle functionality
+        const toggleRawBtn = document.getElementById('toggleRawBtn');
+        const rawOutput = document.getElementById('rawOutput');
+        let rawVisible = false;
+        
+        toggleRawBtn.addEventListener('click', () => {
+            rawVisible = !rawVisible;
+            if (rawVisible) {
+                rawOutput.style.display = 'block';
+                toggleRawBtn.textContent = 'Hide';
+            } else {
+                rawOutput.style.display = 'none';
+                toggleRawBtn.textContent = 'Show';
             }
+        });
 
-            const historyHTML = sessions.slice(0, 5).map(session => {
-                const date = new Date(session.timestamp).toLocaleDateString();
-                const time = new Date(session.timestamp).toLocaleTimeString();
-                const itemCount = session.items.length;
-                
-                return `
-                <div class="item-card" style="border-left-color: var(--accent-color);">
-                    <div class="item-name">${date} at ${time}</div>
-                    <div class="item-details">
-                        <strong>Items found:</strong> ${itemCount}<br>
-                        <strong>Items:</strong> ${session.items.map(item => item.name).join(', ').substring(0, 100)}${session.items.map(item => item.name).join(', ').length > 100 ? '...' : ''}
-                    </div>
-                </div>
-            `}).join('');
-
-            historyList.innerHTML = historyHTML;
-        }
 
         // Setup Wizard Functions
         function checkEbayConfiguration() {
@@ -1693,12 +1788,15 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                                  EBAY_CONFIG.clientSecret !== 'your-ebay-client-secret';
             isEbayConfigured = hasCredentials;
             
+            const setupBtn = document.getElementById('setupEbayBtn');
             if (isEbayConfigured) {
-                ebayStatus.textContent = 'Configured';
-                ebayStatus.className = 'status-badge success';
+                setupBtn.style.background = 'var(--success-color)';
+                setupBtn.style.color = 'white';
+                setupBtn.title = 'eBay API Configured';
             } else {
-                ebayStatus.textContent = 'Not Configured';
-                ebayStatus.className = 'status-badge warning';
+                setupBtn.style.background = 'var(--warning-color)';
+                setupBtn.style.color = 'white';
+                setupBtn.title = 'Setup eBay API';
             }
         }
 
