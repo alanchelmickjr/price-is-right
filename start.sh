@@ -285,28 +285,27 @@ if [ "$AI_SERVER" = true ]; then
     fi
 fi
 
+# Start unified SSL proxy for HTTPS access and eBay API CORS handling
 echo ""
-echo "🎉 Simply eBay is running!"
-echo "========================="
-echo ""
-echo "📱 Main App:"
-echo "   👉 http://localhost:$WEB_PORT"
-echo ""
-echo "📦 Data Persistence:"
-echo "   Gun.js Relay: http://localhost:$GUN_PORT"
-echo ""
-if [ "$AI_SERVER" = true ]; then
-    echo "🤖 AI Assistant:"
-    echo "   Status: http://localhost:$AI_PORT/health"
-    echo "   ✅ Local AI processing enabled"
+echo "🔐 Starting unified SSL proxy..."
+python3 ./unified-proxy.py 8443 --ssl > unified-proxy.log 2>&1 &
+PROXY_PID=$!
+sleep 2
+
+# Check if proxy is running
+PROXY_RUNNING=false
+if ps -p $PROXY_PID > /dev/null 2>&1; then
+    echo "✅ Unified SSL proxy running on port 8443 (PID: $PROXY_PID)"
+    PROXY_RUNNING=true
 else
-    echo "🤖 AI Assistant:"
-    echo "   ❌ Disabled (llama-server issues)"
-    echo "   📝 App will work without AI, but identification will be manual"
+    echo "❌ Failed to start unified SSL proxy. Check unified-proxy.log for details."
+    echo "   Last few lines of log:"
+    tail -n 5 unified-proxy.log 2>/dev/null || echo "   (No log file found)"
 fi
+
+
 echo ""
-echo "🎯 Quick Start:"
-echo "   1. Open http://localhost:$WEB_PORT in your browser"
+echo "🧹 Cleaning up..."
 echo "   2. Allow camera permissions when prompted"
 echo "   3. Start scanning items!"
 echo "   4. Click 'Setup eBay API' for real pricing data"
@@ -317,6 +316,7 @@ echo "   • Check gun-relay.log if data isn't saving"
 echo "   • Visit GitHub repository for more help"
 echo ""
 echo "🛑 Press Ctrl+C to stop all servers"
+echo " http://localhost:8000 "
 echo ""
 
 # Wait for background processes

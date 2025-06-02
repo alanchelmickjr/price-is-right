@@ -1214,7 +1214,8 @@
             clientSecret: localStorage.getItem('ebay_client_secret') || 'your-ebay-client-secret',
             sandbox: localStorage.getItem('ebay_sandbox') === 'true' || true,
             get baseUrl() {
-                return this.sandbox ? 'https://api.sandbox.ebay.com' : 'https://api.ebay.com';
+                // Use eBay proxy to avoid CORS issues
+                return 'http://localhost:8444/ebay';
             }
         };
 
@@ -1276,13 +1277,17 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             }
 
             try {
-                const response = await fetch(`${EBAY_CONFIG.baseUrl}/identity/v1/oauth2/token`, {
+                // Use local proxy to avoid CORS issues
+                const response = await fetch('http://localhost:8081/ebay/oauth/token', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': `Basic ${btoa(`${EBAY_CONFIG.clientId}:${EBAY_CONFIG.clientSecret}`)}`
+                        'Content-Type': 'application/json',
                     },
-                    body: 'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope'
+                    body: JSON.stringify({
+                        client_id: EBAY_CONFIG.clientId,
+                        client_secret: EBAY_CONFIG.clientSecret,
+                        sandbox: EBAY_CONFIG.sandbox
+                    })
                 });
 
                 if (!response.ok) {
@@ -1310,20 +1315,20 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     throw new Error('Could not obtain eBay access token');
                 }
 
-                // Search for completed listings to get price data
-                const searchUrl = `${EBAY_CONFIG.baseUrl}/buy/browse/v1/item_summary/search`;
-                const params = new URLSearchParams({
-                    q: itemName,
-                    limit: 20,
-                    filter: 'conditionIds:{3000|3500|4000|5000},deliveryCountry:US,soldListings:true',
-                    sort: 'price'
-                });
-
-                const response = await fetch(`${searchUrl}?${params}`, {
+                // Search for completed listings to get price data via proxy
+                const response = await fetch('http://localhost:8081/ebay/buy/browse/item_summary/search', {
+                    method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US'
-                    }
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        query: itemName,
+                        limit: 20,
+                        filter: 'conditionIds:{3000|3500|4000|5000},deliveryCountry:US,soldListings:true',
+                        sort: 'price',
+                        sandbox: EBAY_CONFIG.sandbox
+                    })
                 });
 
                 if (!response.ok) {
@@ -1527,9 +1532,14 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     <div class="item-details">
                         <strong>Duration:</strong> ${duration}<br>
                         <strong>Items Found:</strong> ${session.itemCount || 0}<br>
-                        <button onclick="loadSession('${session.id}')" class="settings-input" style="margin-top: 10px;">
-                            View Items
-                        </button>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button onclick="loadSession('${session.id}')" class="settings-input" style="flex: 1;">
+                                View Items
+                            </button>
+                            <button onclick="deleteSession('${session.id}')" class="settings-input" style="flex: 1; background-color: #dc3545; color: white;">
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
                 `;
@@ -1546,6 +1556,28 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     addItemToDisplay(item);
                 }
             });
+        }
+
+        // Delete session and all its items
+        function deleteSession(sessionId) {
+            if (confirm('Are you sure you want to delete this session? This cannot be undone.')) {
+                // Delete all items in the session first
+                gun.get('sessions').get(sessionId).get('items').map().once((item, itemId) => {
+                    if (item) {
+                        gun.get('sessions').get(sessionId).get('items').get(itemId).put(null);
+                    }
+                });
+                
+                // Delete the session itself
+                gun.get('sessions').get(sessionId).put(null);
+                
+                // Refresh the history display
+                setTimeout(() => {
+                    loadHistory();
+                }, 500); // Small delay to ensure deletion is processed
+                
+                console.log(`🗑️ Deleted session: ${sessionId}`);
+            }
         }
 
         function updateStatus(type, message) {
@@ -1692,11 +1724,37 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                         <strong>Sellability:</strong> ${item.sellability}<br>
                         ${priceInfo}
                         ${item.description}
+                        <button onclick="deleteItem('${item.id}')" class="settings-input" style="margin-top: 10px; background-color: #dc3545; color: white; width: 100%;">
+                            Delete Item
+                        </button>
                     </div>
                 </div>
                 `;
 
                 itemsList.insertAdjacentHTML('beforeend', itemHTML);
+            }
+        }
+
+        // Delete item from current session and display
+        function deleteItem(itemId) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                // Remove from display
+                const itemElement = document.getElementById(`item-${itemId}`);
+                if (itemElement) {
+                    itemElement.remove();
+                }
+                
+                // Remove from Gun.js if we have a current session
+                if (currentSessionId) {
+                    gun.get('sessions').get(currentSessionId).get('items').get(itemId).put(null);
+                }
+                
+                console.log(`🗑️ Deleted item: ${itemId}`);
+                
+                // Update display if no items left
+                if (itemsList.children.length === 0) {
+                    itemsList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No sellable items detected</div>';
+                }
             }
         }
 
