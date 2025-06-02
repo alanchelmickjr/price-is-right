@@ -4,22 +4,37 @@
   "description": "Point your camera, get instant AI pricing, list to eBay",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f0f0f0",
+  "background_color": "#e6e9ef",
   "theme_color": "#4285f4",
   "orientation": "portrait-primary",
+  "scope": "./",
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "auto"
+  },
+  "screenshots": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "categories": ["productivity", "business"],
+  "categories": ["productivity", "business", "shopping"],
   "shortcuts": [
     {
       "name": "Quick Scan",
@@ -28,5 +43,10 @@
       "url": "./index.html?quick=true",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "lang": "en-US"
 }

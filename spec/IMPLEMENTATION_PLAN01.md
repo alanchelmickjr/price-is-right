@@ -55,7 +55,26 @@
     *   [x] Implement credential validation and testing
     *   [x] Create notification system for user guidance
 
-### Phase 3: eBay Posting & User Management - "Post"
+### Phase 3: UX Refinements & Session Management ✅ COMPLETED
+*   [x] **Session Management Improvements:**
+    *   [x] Fix session loading on app startup - sessions now load automatically
+    *   [x] Implement session expiration (1 week maximum) - old sessions filtered out
+    *   [x] Change "Hide" to collapse functionality (don't close cards) - sessions collapse content, not remove card
+    *   [x] Add proper close buttons to sessions and eBay wizard - X buttons added for proper closure
+*   [x] **Settings & Toggles:**
+    *   [x] Move raw AI output to settings with toggle checkbox - now controlled via settings menu
+    *   [x] Default raw output to hidden but accessible via settings - saves user preference
+    *   [x] Preserve user preferences across sessions - localStorage integration
+*   [x] **Control Layout Refinement:**
+    *   [x] Group bottom buttons in triangular corner layout - implemented frosted glass grouping
+    *   [x] Add frosted/gunmetal background with content-under-bridge effect - backdrop blur with transparency
+    *   [x] Maintain accessibility while showing underlying content - preserved interaction while showing depth
+*   [x] **Modal & Wizard Improvements:**
+    *   [x] Clean up eBay wizard styling (reduce border shadow fuzz) - simplified to clean shadows
+    *   [x] Add prominent close buttons to all modals - X button in top-right corner
+    *   [x] Improve modal accessibility and escape handling - Escape key and click-outside support
+
+### Phase 4: eBay Posting & User Management - "Post"
 *   [ ] **eBay API Integration (Write Access):**
     *   [ ] Implement eBay API authentication for posting items (OAuth)
     *   [ ] Develop functionality to create new eBay listings
@@ -67,10 +86,16 @@
 *   [ ] **Refine "Post" Workflow:**
     *   [ ] Design thumb-friendly workflow for reviewing and confirming posts
 
-### Phase 4: Refinement, Testing & PWA Optimization
-*   [ ] **Vector Store (If Necessary):**
+### Phase 5: Voice Interaction & Advanced Features
+*   [ ] **Voice Interaction:**
+    *   [ ] Add voice commands for hands-free operation
+    *   [ ] Implement speech-to-text for item descriptions
+    *   [ ] Voice confirmation for posting actions
+*   [ ] **Advanced Features:**
     *   [ ] Evaluate if object identification accuracy requires local vector store
     *   [ ] If needed, integrate lightweight TensorFlow.js solution
+
+### Phase 6: Refinement, Testing & PWA Optimization
 *   [ ] **UI/UX Polish:**
     *   [ ] Refine neumorphic and curvy UI based on user testing
     *   [ ] Ensure all interactions are intuitive and thumb-friendly
