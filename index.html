@@ -11,9 +11,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="application-name" content="Simply eBay">
-    <meta name="msapplication-TileColor" content="#4285f4">
-    <meta name="msapplication-config" content="browserconfig.xml">
     <style>
         :root {
             /* Enhanced Color Palette */
@@ -106,19 +103,25 @@
 
 
         .camera-container {
-            flex: 1;
             display: flex;
-            flex-direction: column;
-            padding: 0 var(--spacing-md);
-            max-width: 100%;
+            flex-direction: row;
+            width: 100%;
+            height: 100vh;
             animation: fadeIn var(--transition-slow) ease;
         }
 
         #videoFeed {
-            width: 100%;
-            height: 100%;
             object-fit: cover;
             background-color: #000;
+            flex: 3;
+        }
+
+        .left-pane {
+            flex: 1;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .video-overlay {
@@ -132,7 +135,6 @@
             backdrop-filter: blur(15px);
             transform: translateY(-100%);
             transition: all var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: var(--shadow-medium);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -142,12 +144,12 @@
         }
 
         .identified-items {
-            background: var(--surface-bg);
+            background: white;
             border-radius: var(--border-radius-md);
-            box-shadow: var(--shadow-inset);
             padding: var(--spacing-lg);
-            margin-bottom: var(--spacing-lg);
-            min-height: 100px;
+            min-height: 200px;
+            height: 100%;
+            flex: 3;
             transition: all var(--transition-medium) ease;
             animation: fadeIn var(--transition-medium) ease;
         }
@@ -166,7 +168,6 @@
         .item-card {
             background: var(--surface-bg);
             border-radius: var(--border-radius-md);
-            box-shadow: var(--shadow-medium);
             padding: var(--spacing-lg);
             margin-bottom: var(--spacing-md);
             border-left: 4px solid var(--success-color);
@@ -243,53 +244,24 @@
         }
 
 
-        /* Enhanced Control Layout - Triangular Grouping */
+        /* Utility controls bottom right */
         .utility-controls {
-            position: fixed;
             bottom: var(--spacing-lg);
             right: var(--spacing-lg);
             display: flex;
-            flex-direction: column;
             gap: var(--spacing-sm);
             z-index: 100;
-            padding: var(--spacing-md);
-            background: rgba(20, 25, 35, 0.85);
-            backdrop-filter: blur(20px) saturate(180%);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .utility-controls::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.05) 0%, 
-                transparent 50%, 
-                rgba(0, 0, 0, 0.05) 100%);
-            border-radius: inherit;
-            pointer-events: none;
         }
 
         .control-btn {
             border: none;
             border-radius: 50%;
             background: var(--surface-bg);
-            box-shadow: 
-                3px 3px 8px rgba(163, 177, 198, 0.4),
-                -3px -3px 8px rgba(255, 255, 255, 0.9),
-                inset 1px 1px 2px rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             font-size: 1.1rem;
             color: var(--text-primary);
@@ -297,19 +269,29 @@
             height: calc(var(--thumb-size) * 0.7);
         }
 
-        .control-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 
-                4px 4px 12px rgba(163, 177, 198, 0.5),
-                -4px -4px 12px rgba(255, 255, 255, 0.9),
-                inset 1px 1px 3px rgba(255, 255, 255, 0.4);
+        .control-button-wrapper {
+            display: flex;
+            justify-content: space-between;
+            background-color: white;
+            align-items: center;
+            height: 100px;
+            padding: 24px;
+            border-radius: 24px;
+        }
+
+        /* Utility controls bottom right */
+        .utility-controls {
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
+            display: flex;
+            gap: var(--spacing-sm);
+            z-index: 100;
         }
 
         .control-btn:active {
-            transform: translateY(0) scale(0.95);
-            box-shadow: 
-                inset 4px 4px 8px rgba(163, 177, 198, 0.6),
-                inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+            transform: scale(0.95);
+            box-shadow: inset 4px 4px 8px var(--shadow-dark),
+                       inset -4px -4px 8px var(--shadow-light);
         }
 
         /* Remove any background elements from eBay button */
@@ -323,20 +305,16 @@
             border-radius: 50%;
             background: var(--warning-color);
             color: white;
-            box-shadow: 1px 1px 2px var(--shadow-dark);
         }
 
         /* Inset Camera View */
         .video-wrapper {
             position: relative;
             background: #000;
-            border-radius: var(--border-radius-md);
-            box-shadow: inset 6px 6px 12px rgba(0, 0, 0, 0.3),
-                       inset -6px -6px 12px rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
             overflow: hidden;
             margin: var(--spacing-sm);
             aspect-ratio: 4/3;
-            border: 2px solid var(--surface-bg);
         }
 
         /* Art Deco Frame */
@@ -353,40 +331,29 @@
             z-index: 2;
         }
 
-        /* Enhanced scan button with gunmetal effect */
-        .control-btn.scan {
-            position: fixed;
-            bottom: var(--spacing-lg);
-            left: var(--spacing-lg);
-            width: calc(var(--thumb-size) * 1.3);
-            height: calc(var(--thumb-size) * 1.3);
-            background: linear-gradient(145deg, #4a90e2, #357abd);
+        /* Large scan button - separate from dashboard */
+        .scan-button {
+            background-color:#0066F5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 64px;
+            width: 64px;
             color: white;
-            font-size: 1.8rem;
+            font-family: sans-serif;
+            font-weight: 500;
+            font-size: 18px;
             z-index: 100;
             border-radius: 50%;
-            box-shadow: 
-                6px 6px 20px rgba(0, 0, 0, 0.3),
-                -6px -6px 20px rgba(255, 255, 255, 0.1),
-                inset 2px 2px 4px rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .control-btn.scan:hover {
-            transform: translateY(-3px);
-            box-shadow: 
-                8px 8px 25px rgba(0, 0, 0, 0.4),
-                -8px -8px 25px rgba(255, 255, 255, 0.1),
-                inset 2px 2px 6px rgba(255, 255, 255, 0.3);
         }
 
         .control-btn.scan:active {
-            transform: translateY(0) scale(0.95);
-            box-shadow: 
-                3px 3px 12px rgba(0, 0, 0, 0.4),
-                -3px -3px 12px rgba(255, 255, 255, 0.1),
-                inset 6px 6px 12px rgba(0, 0, 0, 0.2);
-            background: linear-gradient(145deg, #357abd, #2a5f96);
+            transform: scale(0.95);
+            box-shadow: 3px 3px 6px var(--shadow-dark),
+                       -3px -3px 6px var(--shadow-light),
+                       inset -4px -4px 8px var(--shadow-dark),
+                       inset 4px 4px 8px var(--shadow-light);
+            background: var(--warning-color);
         }
 
         .fab-menu-item {
@@ -537,15 +504,15 @@
             border-left: 4px solid #e53e3e;
         }
 
-        /* Enhanced Setup Wizard Styles - Cleaner Design */
+        /* Setup Wizard Styles */
         .setup-modal {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -555,40 +522,23 @@
 
         .setup-card {
             background: var(--surface-bg);
-            border-radius: var(--border-radius-md);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-large), 0 10px 30px rgba(0, 0, 0, 0.1);
             max-width: 500px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
             animation: slideUp var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(163, 177, 198, 0.2);
-            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transform: translateZ(0);
+            transition: transform var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow var(--transition-medium) cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Add close button to setup modal */
-        .setup-close {
-            position: absolute;
-            top: var(--spacing-md);
-            right: var(--spacing-md);
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-fast) ease;
-        }
-
-        .setup-close:hover {
-            background: rgba(163, 177, 198, 0.1);
-            color: var(--text-primary);
+        .setup-card:hover {
+            transform: translateY(-2px) translateZ(0);
+            box-shadow: var(--shadow-large), 0 15px 35px rgba(0, 0, 0, 0.15);
         }
 
         @keyframes slideUp {
@@ -906,29 +856,12 @@
 
         @media (min-width: 768px) {
             .camera-container {
-                max-width: 600px;
                 margin: 0 auto;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Scan button bottom left -->
-    <button id="startButton" class="control-btn scan" title="Start/Stop Scanning">
-        💲
-        <div class="scan-handle top"></div>
-        <div class="scan-handle bottom"></div>
-    </button>
-    
-    <!-- Utility buttons bottom right -->
-    <div class="utility-controls">
-        <button id="rotateBtn" class="control-btn utility" title="Rotate Camera View">📱</button>
-        <button id="llamaBtn" class="control-btn utility" title="Open Llama Chat">🦙</button>
-        <button id="settingsBtn" class="control-btn utility" title="Settings">⚙️</button>
-        <button id="setupEbayBtn" class="control-btn utility" style="background: var(--warning-color); color: white;" title="Setup eBay">
-            🛍️
-        </button>
-    </div>
 
     <main class="camera-container">
         <div class="video-wrapper">
@@ -940,46 +873,62 @@
             </div>
         </div>
 
-        <section class="identified-items" id="rawOutputSection" style="display: none;">
-            <div class="settings-row" style="margin-bottom: 15px;">
-                <h2 class="items-header" style="margin: 0;">AI Raw Output</h2>
-                <button id="toggleRawBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer;">Hide</button>
-            </div>
-            <div id="rawOutput" style="
-                display: block;
-                background: var(--surface-bg);
-                border-radius: var(--border-radius-sm);
-                box-shadow: var(--shadow-inset);
-                padding: var(--spacing-md);
-                margin-bottom: var(--spacing-md);
-                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-                font-size: 0.8rem;
-                line-height: 1.4;
-                color: var(--text-secondary);
-                white-space: pre-wrap;
-                max-height: 200px;
-                overflow-y: auto;
-            ">
-                AI responses will appear here...
-            </div>
-        </section>
-
-        <section class="identified-items">
-            <h2 class="items-header">Identified Items</h2>
-            <div id="itemsList">
-                <p style="color: var(--text-secondary); font-style: italic;">
-                    Start scanning to identify sellable items...
-                </p>
-            </div>
-        </section>
-
-        <section class="identified-items" id="historySection" style="display: none;">
-            <div class="settings-row" style="margin-bottom: 15px; position: relative;">
-                <h2 class="items-header" style="margin: 0;">Recent Sessions</h2>
-                <div style="display: flex; gap: 8px;">
-                    <button id="toggleHistoryBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer;">Show</button>
-                    <button id="closeHistoryBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer; background: #e53e3e; color: white;">×</button>
+        <div class="left-pane">
+            <section class="identified-items">
+                <div class="settings-row" style="margin-bottom: 15px;">
+                    <h2 class="items-header" style="margin: 0;">AI Raw Output</h2>
+                    <button id="toggleRawBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer;">Show</button>
                 </div>
+                <div id="rawOutput" style="
+                    display: none;
+                    background: var(--surface-bg);
+                    border-radius: var(--border-radius-sm);
+                    box-shadow: var(--shadow-inset);
+                    padding: var(--spacing-md);
+                    margin-bottom: var(--spacing-md);
+                    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                    font-size: 0.8rem;
+                    line-height: 1.4;
+                    color: var(--text-secondary);
+                    white-space: pre-wrap;
+                    max-height: 200px;
+                    overflow-y: auto;
+                ">
+                    AI responses will appear here...
+                </div>
+            </section>
+            
+            <section class="identified-items ">
+                <h2 class="items-header">Identified Items</h2>
+                <div id="itemsList">
+                    <p style="color: var(--text-secondary); font-style: italic;">
+                        Start scanning to identify sellable items...
+                    </p>
+                </div>
+            </section>
+
+            <section class="control-button-wrapper">
+                            <!-- Scan button bottom left -->
+                            <button id="startButton" class="scan-button" title="Start/Stop Scanning">
+                                Scan
+                                
+                            </button>
+                            
+                            <!-- Utility buttons bottom right -->
+                            <div class="utility-controls">
+                                <button id="rotateBtn" class="control-btn utility" title="Rotate Camera View">📱</button>
+                                <button id="llamaBtn" class="control-btn utility" title="Open Llama Chat">🦙</button>
+                                <button id="settingsBtn" class="control-btn utility" title="Settings">⚙️</button>
+                                <button id="setupEbayBtn" class="control-btn utility" style="background: var(--warning-color); color: white;" title="Setup eBay">
+                                    🛍️
+                                </button>
+                            </div>
+                        </section>
+        </div>
+        <section class="identified-items" id="historySection" style="display: none;">
+            <div class="settings-row" style="margin-bottom: 15px;">
+                <h2 class="items-header" style="margin: 0;">Recent Sessions</h2>
+                <button id="toggleHistoryBtn" class="settings-input" style="padding: 5px 10px; cursor: pointer;">Show</button>
             </div>
             <div id="historyList">
                 <p style="color: var(--text-secondary); font-style: italic;">
@@ -1012,13 +961,6 @@
             </div>
         </div>
         <div class="fab-menu-item">
-            <i>🤖</i>
-            <div style="flex: 1;">
-                <label class="settings-label">Show Raw AI Output</label>
-                <input type="checkbox" id="showRawOutputToggle" style="margin-top: 4px;">
-            </div>
-        </div>
-        <div class="fab-menu-item">
             <i>🔌</i>
             <div style="flex: 1;">
                 <label class="settings-label">API Server</label>
@@ -1030,7 +972,6 @@
     <!-- Setup Modal -->
     <div id="setupModal" class="setup-modal" style="display: none;">
         <div class="setup-card">
-            <button class="setup-close" id="setupCloseBtn" title="Close">×</button>
             <div class="setup-header">
                 <h2 class="setup-title">eBay API Setup</h2>
                 <p class="setup-subtitle">Get real-time pricing for your items</p>
@@ -1164,7 +1105,7 @@
                 <button id="setupPrevBtn" class="setup-button secondary" style="display: none;">← Previous</button>
                 <button id="setupNextBtn" class="setup-button primary">Get Started →</button>
                 <button id="setupTestBtn" class="setup-button primary" style="display: none;">Test Connection</button>
-                <button id="setupCompleteBtn" class="setup-button primary" style="display: none;">Start Scanning!</button>
+                <button id="setupCloseBtn" class="setup-button primary" style="display: none;">Start Scanning!</button>
             </div>
         </div>
     </div>
@@ -1214,8 +1155,7 @@
             clientSecret: localStorage.getItem('ebay_client_secret') || 'your-ebay-client-secret',
             sandbox: localStorage.getItem('ebay_sandbox') === 'true' || true,
             get baseUrl() {
-                // Use eBay proxy to avoid CORS issues
-                return 'http://localhost:8444/ebay';
+                return this.sandbox ? 'https://api.sandbox.ebay.com' : 'https://api.ebay.com';
             }
         };
 
@@ -1237,7 +1177,6 @@
         const setupPrevBtn = document.getElementById('setupPrevBtn');
         const setupNextBtn = document.getElementById('setupNextBtn');
         const setupTestBtn = document.getElementById('setupTestBtn');
-        const setupCompleteBtn = document.getElementById('setupCompleteBtn');
         const setupCloseBtn = document.getElementById('setupCloseBtn');
         const clientIdInput = document.getElementById('clientIdInput');
         const clientSecretInput = document.getElementById('clientSecretInput');
@@ -1277,17 +1216,13 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             }
 
             try {
-                // Use local proxy to avoid CORS issues
-                const response = await fetch('http://localhost:8081/ebay/oauth/token', {
+                const response = await fetch(`${EBAY_CONFIG.baseUrl}/identity/v1/oauth2/token`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': `Basic ${btoa(`${EBAY_CONFIG.clientId}:${EBAY_CONFIG.clientSecret}`)}`
                     },
-                    body: JSON.stringify({
-                        client_id: EBAY_CONFIG.clientId,
-                        client_secret: EBAY_CONFIG.clientSecret,
-                        sandbox: EBAY_CONFIG.sandbox
-                    })
+                    body: 'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope'
                 });
 
                 if (!response.ok) {
@@ -1315,20 +1250,20 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     throw new Error('Could not obtain eBay access token');
                 }
 
-                // Search for completed listings to get price data via proxy
-                const response = await fetch('http://localhost:8081/ebay/buy/browse/item_summary/search', {
-                    method: 'POST',
+                // Search for completed listings to get price data
+                const searchUrl = `${EBAY_CONFIG.baseUrl}/buy/browse/v1/item_summary/search`;
+                const params = new URLSearchParams({
+                    q: itemName,
+                    limit: 20,
+                    filter: 'conditionIds:{3000|3500|4000|5000},deliveryCountry:US,soldListings:true',
+                    sort: 'price'
+                });
+
+                const response = await fetch(`${searchUrl}?${params}`, {
                     headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        token: token,
-                        query: itemName,
-                        limit: 20,
-                        filter: 'conditionIds:{3000|3500|4000|5000},deliveryCountry:US,soldListings:true',
-                        sort: 'price',
-                        sandbox: EBAY_CONFIG.sandbox
-                    })
+                        'Authorization': `Bearer ${token}`,
+                        'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US'
+                    }
                 });
 
                 if (!response.ok) {
@@ -1397,14 +1332,12 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             });
         }
 
-        // Load recent scanning sessions with 1-week expiration
+        // Load recent scanning sessions
         async function loadRecentSessions() {
             return new Promise((resolve) => {
                 const sessions = [];
-                const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000); // 1 week in milliseconds
-                
                 gun.get('sessions').map().once((sessionData, sessionId) => {
-                    if (sessionData && sessionData.startTime && sessionData.startTime > oneWeekAgo) {
+                    if (sessionData && sessionData.startTime) {
                         sessions.push(sessionData);
                     }
                 });
@@ -1532,14 +1465,9 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     <div class="item-details">
                         <strong>Duration:</strong> ${duration}<br>
                         <strong>Items Found:</strong> ${session.itemCount || 0}<br>
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button onclick="loadSession('${session.id}')" class="settings-input" style="flex: 1;">
-                                View Items
-                            </button>
-                            <button onclick="deleteSession('${session.id}')" class="settings-input" style="flex: 1; background-color: #dc3545; color: white;">
-                                Delete
-                            </button>
-                        </div>
+                        <button onclick="loadSession('${session.id}')" class="settings-input" style="margin-top: 10px;">
+                            View Items
+                        </button>
                     </div>
                 </div>
                 `;
@@ -1556,28 +1484,6 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                     addItemToDisplay(item);
                 }
             });
-        }
-
-        // Delete session and all its items
-        function deleteSession(sessionId) {
-            if (confirm('Are you sure you want to delete this session? This cannot be undone.')) {
-                // Delete all items in the session first
-                gun.get('sessions').get(sessionId).get('items').map().once((item, itemId) => {
-                    if (item) {
-                        gun.get('sessions').get(sessionId).get('items').get(itemId).put(null);
-                    }
-                });
-                
-                // Delete the session itself
-                gun.get('sessions').get(sessionId).put(null);
-                
-                // Refresh the history display
-                setTimeout(() => {
-                    loadHistory();
-                }, 500); // Small delay to ensure deletion is processed
-                
-                console.log(`🗑️ Deleted session: ${sessionId}`);
-            }
         }
 
         function updateStatus(type, message) {
@@ -1724,37 +1630,11 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                         <strong>Sellability:</strong> ${item.sellability}<br>
                         ${priceInfo}
                         ${item.description}
-                        <button onclick="deleteItem('${item.id}')" class="settings-input" style="margin-top: 10px; background-color: #dc3545; color: white; width: 100%;">
-                            Delete Item
-                        </button>
                     </div>
                 </div>
                 `;
 
                 itemsList.insertAdjacentHTML('beforeend', itemHTML);
-            }
-        }
-
-        // Delete item from current session and display
-        function deleteItem(itemId) {
-            if (confirm('Are you sure you want to delete this item?')) {
-                // Remove from display
-                const itemElement = document.getElementById(`item-${itemId}`);
-                if (itemElement) {
-                    itemElement.remove();
-                }
-                
-                // Remove from Gun.js if we have a current session
-                if (currentSessionId) {
-                    gun.get('sessions').get(currentSessionId).get('items').get(itemId).put(null);
-                }
-                
-                console.log(`🗑️ Deleted item: ${itemId}`);
-                
-                // Update display if no items left
-                if (itemsList.children.length === 0) {
-                    itemsList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No sellable items detected</div>';
-                }
             }
         }
 
@@ -1876,54 +1756,27 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             }
         });
 
-        // History toggle functionality with session expiration
+        // History toggle functionality
         let historyVisible = false;
         toggleHistoryBtn.addEventListener('click', async () => {
             historyVisible = !historyVisible;
             if (historyVisible) {
-                const historyList = document.getElementById('historyList');
-                historyList.style.display = 'block';
-                toggleHistoryBtn.textContent = 'Collapse';
+                historySection.style.display = 'block';
+                toggleHistoryBtn.textContent = 'Hide';
                 
-                // Load recent sessions with expiration filter
+                // Load recent sessions
                 const sessions = await loadRecentSessions();
                 displayHistory(sessions);
             } else {
-                const historyList = document.getElementById('historyList');
-                historyList.style.display = 'none';
+                historySection.style.display = 'none';
                 toggleHistoryBtn.textContent = 'Show';
             }
         });
 
-        // Close history section entirely
-        document.getElementById('closeHistoryBtn').addEventListener('click', () => {
-            document.getElementById('historySection').style.display = 'none';
-            historyVisible = false;
-        });
-
-        // Settings-based raw output toggle
-        const showRawOutputToggle = document.getElementById('showRawOutputToggle');
-        const rawOutputSection = document.getElementById('rawOutputSection');
-        
-        showRawOutputToggle.addEventListener('change', () => {
-            const isChecked = showRawOutputToggle.checked;
-            rawOutputSection.style.display = isChecked ? 'block' : 'none';
-            
-            // Save preference
-            localStorage.setItem('showRawOutput', isChecked);
-        });
-
-        // Load saved preference
-        const savedRawOutputPref = localStorage.getItem('showRawOutput');
-        if (savedRawOutputPref === 'true') {
-            showRawOutputToggle.checked = true;
-            rawOutputSection.style.display = 'block';
-        }
-
-        // Raw output toggle functionality (for backwards compatibility)
+        // Raw output toggle functionality
         const toggleRawBtn = document.getElementById('toggleRawBtn');
         const rawOutput = document.getElementById('rawOutput');
-        let rawVisible = true; // Start as visible since section is shown
+        let rawVisible = false;
         
         toggleRawBtn.addEventListener('click', () => {
             rawVisible = !rawVisible;
@@ -1933,21 +1786,6 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             } else {
                 rawOutput.style.display = 'none';
                 toggleRawBtn.textContent = 'Show';
-            }
-        });
-
-        // Setup modal close button
-        document.getElementById('setupCloseBtn').addEventListener('click', hideSetupModal);
-
-        // Close modals with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (setupModal.style.display === 'flex') {
-                    hideSetupModal();
-                }
-                if (settingsMenu.classList.contains('show')) {
-                    settingsMenu.classList.remove('show');
-                }
             }
         });
 
@@ -2000,7 +1838,7 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
             setupPrevBtn.style.display = step > 1 ? 'inline-block' : 'none';
             setupNextBtn.style.display = step < 6 ? 'inline-block' : 'none';
             setupTestBtn.style.display = step === 5 ? 'inline-block' : 'none';
-            setupCompleteBtn.style.display = step === 6 ? 'inline-block' : 'none';
+            setupCloseBtn.style.display = step === 6 ? 'inline-block' : 'none';
             
             // Update button text
             if (step === 4) {
@@ -2176,18 +2014,6 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
                 loadingScreen.classList.add('hidden');
                 checkEbayConfiguration();
 
-                // Load previous sessions on startup
-                try {
-                    const sessions = await loadRecentSessions();
-                    if (sessions.length > 0) {
-                        document.getElementById('historySection').style.display = 'block';
-                        displayHistory(sessions);
-                        showNotification(`Found ${sessions.length} recent session(s)`, 'success', 3000);
-                    }
-                } catch (error) {
-                    console.warn('Could not load previous sessions:', error);
-                }
-
                 // Auto-show setup if eBay not configured
                 if (!isEbayConfigured) {
                     setTimeout(() => {
@@ -2210,7 +2036,7 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
         setupNextBtn.addEventListener('click', nextSetupStep);
         setupPrevBtn.addEventListener('click', prevSetupStep);
         setupTestBtn.addEventListener('click', testEbayConnection);
-        setupCompleteBtn.addEventListener('click', hideSetupModal);
+        setupCloseBtn.addEventListener('click', hideSetupModal);
 
         // Close modal when clicking outside
         setupModal.addEventListener('click', (e) => {
@@ -2399,195 +2225,6 @@ Focus on visible objects like electronics, furniture, books, tools, collectibles
         }
 
         // Show install prompt again after 24 hours if dismissed
-        // PWA Installation Support
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registered successfully:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            });
-        }
-
-        // Listen for beforeinstallprompt event
-        window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('PWA install prompt available');
-            e.preventDefault();
-            deferredPrompt = e;
-            showInstallPrompt();
-        });
-
-        // Listen for app installed event
-        window.addEventListener('appinstalled', (e) => {
-            console.log('PWA was installed');
-            hideInstallPrompt();
-            localStorage.setItem('pwa_installed', 'true');
-        });
-
-        function showInstallPrompt() {
-            if (installPromptShown || localStorage.getItem('pwa_installed') === 'true' || 
-                localStorage.getItem('install_dismissed') === 'true') {
-                return;
-            }
-
-            installPromptShown = true;
-            
-            // Create install prompt overlay
-            const promptOverlay = document.createElement('div');
-            promptOverlay.id = 'install-prompt';
-            promptOverlay.innerHTML = `
-                <div class="install-prompt-content">
-                    <div class="install-icon">📱</div>
-                    <h3>Install Simply eBay</h3>
-                    <p>Add this app to your home screen for quick access to AI-powered eBay listing!</p>
-                    <div class="install-buttons">
-                        <button class="install-btn primary" onclick="installPWA()">Install App</button>
-                        <button class="install-btn secondary" onclick="dismissInstallPrompt()">Not Now</button>
-                    </div>
-                </div>
-            `;
-            
-            // Add styles for the install prompt
-            const installStyles = document.createElement('style');
-            installStyles.textContent = `
-                #install-prompt {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(0, 0, 0, 0.7);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 10000;
-                    animation: fadeIn 0.3s ease-out;
-                }
-                
-                .install-prompt-content {
-                    background: var(--surface-bg);
-                    border-radius: var(--border-radius-lg);
-                    padding: 2rem;
-                    text-align: center;
-                    box-shadow: var(--shadow-large);
-                    max-width: 350px;
-                    margin: 1rem;
-                    animation: slideUp 0.3s ease-out;
-                }
-                
-                .install-icon {
-                    font-size: 3rem;
-                    margin-bottom: 1rem;
-                }
-                
-                .install-prompt-content h3 {
-                    color: var(--text-primary);
-                    margin-bottom: 0.5rem;
-                    font-size: 1.5rem;
-                }
-                
-                .install-prompt-content p {
-                    color: var(--text-secondary);
-                    margin-bottom: 2rem;
-                    line-height: 1.4;
-                }
-                
-                .install-buttons {
-                    display: flex;
-                    gap: 1rem;
-                    justify-content: center;
-                }
-                
-                .install-btn {
-                    padding: 0.75rem 1.5rem;
-                    border: none;
-                    border-radius: var(--border-radius-sm);
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all var(--transition-fast);
-                    min-width: 100px;
-                }
-                
-                .install-btn.primary {
-                    background: var(--accent-color);
-                    color: white;
-                    box-shadow: var(--shadow-small);
-                }
-                
-                .install-btn.primary:hover {
-                    transform: translateY(-2px);
-                    box-shadow: var(--shadow-medium);
-                }
-                
-                .install-btn.secondary {
-                    background: var(--surface-bg);
-                    color: var(--text-secondary);
-                    box-shadow: var(--shadow-small);
-                }
-                
-                .install-btn.secondary:hover {
-                    transform: translateY(-1px);
-                }
-                
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                
-                @keyframes fadeOut {
-                    from { opacity: 1; }
-                    to { opacity: 0; }
-                }
-                
-                @keyframes slideUp {
-                    from { 
-                        opacity: 0;
-                        transform: translateY(30px) scale(0.95);
-                    }
-                    to { 
-                        opacity: 1;
-                        transform: translateY(0) scale(1);
-                    }
-                }
-            `;
-            
-            document.head.appendChild(installStyles);
-            document.body.appendChild(promptOverlay);
-        }
-
-        function hideInstallPrompt() {
-            const prompt = document.getElementById('install-prompt');
-            if (prompt) {
-                prompt.style.animation = 'fadeOut 0.3s ease-out';
-                setTimeout(() => prompt.remove(), 300);
-            }
-            installPromptShown = false;
-        }
-
-        async function installPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                deferredPrompt = null;
-            }
-            hideInstallPrompt();
-        }
-
-        function dismissInstallPrompt() {
-            hideInstallPrompt();
-            localStorage.setItem('install_dismissed', 'true');
-            // Allow showing again after 7 days
-            setTimeout(() => {
-                localStorage.removeItem('install_dismissed');
-            }, 7 * 24 * 60 * 60 * 1000);
-        }
-
         function checkInstallPrompt() {
             const dismissed = localStorage.getItem('install_prompt_dismissed');
             if (dismissed && Date.now() - parseInt(dismissed) > 24 * 60 * 60 * 1000) {
